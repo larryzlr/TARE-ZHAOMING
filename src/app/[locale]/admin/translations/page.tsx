@@ -78,18 +78,18 @@ export default function TranslationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lang: activeLang, content: compactContent }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setOriginalContent(JSON.stringify(JSON.parse(content), null, 2));
         setSaveStatus('success');
         setTimeout(() => setSaveStatus(''), 3000);
       } else {
-        const data = await res.json();
         setSaveStatus('error');
         alert(`保存失败：${data.error || '未知错误'}。文案未保存。`);
       }
-    } catch {
+    } catch (e: any) {
       setSaveStatus('error');
-      alert('网络错误，文案未保存。');
+      alert(`网络错误：${e.message || '请求失败'}。文案未保存。`);
     } finally {
       setSaving(false);
     }

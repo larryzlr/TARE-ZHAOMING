@@ -16,9 +16,9 @@ export async function GET(request: NextRequest) {
       lang,
       content: record?.content || ''
     });
-  } catch (error) {
-    console.error('GET /api/translations error:', error);
-    return NextResponse.json({ error: 'Failed to fetch translations' }, { status: 500 });
+  } catch (error: any) {
+    console.error('GET /api/translations error:', error?.message || error);
+    return NextResponse.json({ error: `获取文案失败：${error?.message || '数据库连接错误'}` }, { status: 500 });
   }
 }
 
@@ -28,7 +28,7 @@ export async function PUT(request: NextRequest) {
     const { lang, content } = body;
 
     if (!lang || typeof content !== 'string') {
-      return NextResponse.json({ error: 'lang and content are required' }, { status: 400 });
+      return NextResponse.json({ error: '缺少 lang 或 content 参数' }, { status: 400 });
     }
 
     // Validate JSON format
@@ -42,12 +42,21 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'JSON 必须为对象类型。文案未保存。' }, { status: 400 });
     }
 
+    // 写入数据库
     await prisma.translation.upsert({
       where: { lang },
       update: { content },
       create: { lang, content }
     });
 
+    // 验证写入成功：读回刚保存的数据
+    const saved = await prisma.translation.findUnique({ where: { lang } });
+    if (!saved || saved.content !== content) {
+      console.error('Verification failed: saved content does not match');
+      return NextResponse.json({ error: '保存验证失败，数据可能未正确写入。请重试。' }, { status: 500 });
+    }
+
+    // 刷新缓存
     try {
       revalidateTag('translations');
       routing.locales.forEach(locale => {
@@ -55,14 +64,14 @@ export async function PUT(request: NextRequest) {
         revalidatePath(`/${locale}/products`);
         revalidatePath(`/${locale}/admin/translations`);
       });
-    } catch {
-      // revalidate 在某些环境可能失败，不影响保存
+    } catch (e) {
+      console.warn('Revalidation warning:', e);
     }
 
-    return NextResponse.json({ success: true, lang });
+    return NextResponse.json({ success: true, lang, verified: true });
   } catch (error: any) {
     console.error('PUT /api/translations error:', error);
-    const errorMsg = error?.message || 'Failed to update translations';
+    const errorMsg = error?.message || '未知错误';
     return NextResponse.json({ error: `保存失败：${errorMsg}` }, { status: 500 });
   }
 }

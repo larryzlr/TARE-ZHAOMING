@@ -1,0 +1,111 @@
+// prisma/schema.prisma (PostgreSQL 版本 - Vercel 部署时使用)
+// 部署到 Vercel 时，将此文件内容替换 prisma/schema.prisma
+// 并设置环境变量 DATABASE_URL 为 PostgreSQL 连接字符串
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  category    String   @default("uncategorized")
+  images      String?
+  status      String   @default("draft")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  translations ProductTranslation[]
+
+  @@map("products")
+}
+
+model ProductTranslation {
+  id         String   @id @default(cuid())
+  productId  String
+  lang       String
+  title      String
+  description String?
+  specs      String?
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, lang])
+  @@map("product_translations")
+}
+
+model SiteConfig {
+  id    String @id @default(cuid())
+  key   String
+  value String
+  lang  String
+
+  @@unique([key, lang])
+  @@map("site_configs")
+}
+
+model User {
+  id       String    @id @default(cuid())
+  email    String    @unique
+  name     String?
+  password String
+  role     String    @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Translation {
+  id        String   @id @default(cuid())
+  lang      String   @unique
+  content   String
+
+  @@map("translations")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  icon        String   @default("")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  translations CategoryTranslation[]
+
+  @@map("categories")
+}
+
+model CategoryTranslation {
+  id          String   @id @default(cuid())
+  categoryId  String
+  lang        String
+  name        String
+
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, lang])
+  @@map("category_translations")
+}
+
+model Inquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  whatsapp  String?
+  product   String?
+  message   String?
+  lang      String   @default("en")
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inquiries")
+}

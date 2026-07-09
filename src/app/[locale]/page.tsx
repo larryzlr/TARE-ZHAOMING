@@ -7,6 +7,8 @@ import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import InquiryForm from '@/components/InquiryForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const t = await getTranslations('IndexPage');
   const pt = await getTranslations('ProductPage');

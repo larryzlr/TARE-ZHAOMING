@@ -7,6 +7,8 @@ import { getSiteConfig } from '@/lib/product-service';
 import { Inter } from 'next/font/google';
 import '@/app/globals.css';
 
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({ subsets: ['latin'] });
 
 type Props = {

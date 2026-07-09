@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 
+export const dynamic = 'force-dynamic';
+
 const PRODUCTS_TITLE_MAP: Record<string, string> = {
   en: 'Products - RUISHA Brake',
   zh: '产品中心 - 瑞刹 RUISHA',

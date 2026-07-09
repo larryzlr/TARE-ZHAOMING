@@ -1,6 +1,8 @@
 import { getAllProducts } from '@/lib/product-service';
 import ImageUploader from '@/components/ImageUploader';
 
+export const dynamic = 'force-dynamic';
+
 type DashboardPageProps = {
   params: { locale: string };
 };

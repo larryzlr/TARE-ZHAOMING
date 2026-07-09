@@ -8,6 +8,8 @@ import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: { locale: string; id: string } }) {
   const { locale, id } = params;
   let title = 'Product - RUISHA Brake';

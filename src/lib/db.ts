@@ -6,7 +6,18 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-const client = globalThis.prisma || new PrismaClient()
+function createPrismaClient() {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  })
+}
+
+const client = globalThis.prisma || createPrismaClient()
 if (process.env.NODE_ENV !== 'production') globalThis.prisma = client
 
 export default client

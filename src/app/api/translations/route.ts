@@ -48,17 +48,21 @@ export async function PUT(request: NextRequest) {
       create: { lang, content }
     });
 
-    revalidateTag('translations');
-
-    routing.locales.forEach(locale => {
-      revalidatePath(`/${locale}`);
-      revalidatePath(`/${locale}/products`);
-      revalidatePath(`/${locale}/admin/translations`);
-    });
+    try {
+      revalidateTag('translations');
+      routing.locales.forEach(locale => {
+        revalidatePath(`/${locale}`);
+        revalidatePath(`/${locale}/products`);
+        revalidatePath(`/${locale}/admin/translations`);
+      });
+    } catch {
+      // revalidate 在某些环境可能失败，不影响保存
+    }
 
     return NextResponse.json({ success: true, lang });
-  } catch (error) {
+  } catch (error: any) {
     console.error('PUT /api/translations error:', error);
-    return NextResponse.json({ error: 'Failed to update translations' }, { status: 500 });
+    const errorMsg = error?.message || 'Failed to update translations';
+    return NextResponse.json({ error: `保存失败：${errorMsg}` }, { status: 500 });
   }
 }

@@ -1,11 +1,13 @@
-// prisma/schema.prisma
+// prisma/schema.prisma (PostgreSQL 版本 - Vercel 部署时使用)
+// 部署到 Vercel 时，将此文件内容替换 prisma/schema.prisma
+// 并设置环境变量 DATABASE_URL 为 PostgreSQL 连接字符串
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -19,7 +21,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   translations ProductTranslation[]
-  
+
   @@map("products")
 }
 
@@ -30,19 +32,19 @@ model ProductTranslation {
   title      String
   description String?
   specs      String?
-  
+
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
+
   @@unique([productId, lang])
   @@map("product_translations")
 }
 
 model SiteConfig {
   id    String @id @default(cuid())
-  key   String // logo, company_name, whatsapp, wechat
+  key   String
   value String
   lang  String
-  
+
   @@unique([key, lang])
   @@map("site_configs")
 }
@@ -55,7 +57,7 @@ model User {
   role     String    @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("users")
 }
 
@@ -63,7 +65,7 @@ model Translation {
   id        String   @id @default(cuid())
   lang      String   @unique
   content   String
-  
+
   @@map("translations")
 }
 
@@ -74,9 +76,9 @@ model Category {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   translations CategoryTranslation[]
-  
+
   @@map("categories")
 }
 

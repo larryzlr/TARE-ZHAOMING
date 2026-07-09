@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -23,17 +22,15 @@ export async function POST(request: NextRequest) {
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const fileName = `uploads/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
+    const blob = await put(fileName, file, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: false,
+    });
 
-    const bytes = await file.arrayBuffer();
-    await writeFile(path.join(uploadDir, fileName), Buffer.from(bytes));
-
-    const url = `/uploads/${fileName}`;
-
-    return NextResponse.json({ url, fileName });
+    return NextResponse.json({ url: blob.url, fileName: blob.pathname });
   } catch (error) {
     console.error('POST /api/upload error:', error);
     return NextResponse.json({ error: '上传失败' }, { status: 500 });

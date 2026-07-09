@@ -22,6 +22,7 @@
     "@prisma/client": "^5.10.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vercel/blob": "^2.6.1",
     "autoprefixer": "^10.0.1",
     "clsx": "^2.1.0",
     "lucide-react": "^0.344.0",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 
 const LANGUAGES = [
@@ -37,24 +37,48 @@ export default function TranslationsPage() {
   const [activeLang, setActiveLang] = useState('zh');
   const [content, setContent] = useState('');
   const [originalContent, setOriginalContent] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>('');
   const [showTemplate, setShowTemplate] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const jsonError = useMemo(() => validateJson(content), [content]);
+  const jsonError = useMemo(() => (isEditing ? validateJson(content) : null), [content, isEditing]);
   const hasChanges = content !== originalContent;
-  const canSave = hasChanges && !jsonError;
+  const canSave = hasChanges && !jsonError && isEditing;
 
-  useEffect(() => {
-    fetch(`/api/translations?lang=${activeLang}`)
+  const loadTranslations = useCallback((lang: string) => {
+    setLoading(true);
+    fetch(`/api/translations?lang=${lang}`)
       .then(res => res.json())
       .then(data => {
         const jsonText = data.content ? JSON.stringify(JSON.parse(data.content), null, 2) : '';
         setContent(jsonText);
         setOriginalContent(jsonText);
       })
-      .catch(() => setContent(''));
-  }, [activeLang]);
+      .catch(() => {
+        setContent('');
+        setOriginalContent('');
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    loadTranslations(activeLang);
+    setIsEditing(false);
+    setSaveStatus('');
+  }, [activeLang, loadTranslations]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setSaveStatus('');
+  };
+
+  const handleCancel = () => {
+    setContent(originalContent);
+    setIsEditing(false);
+    setSaveStatus('');
+  };
 
   const handleFormat = () => {
     if (jsonError) return;
@@ -62,7 +86,7 @@ export default function TranslationsPage() {
   };
 
   const handleSave = async () => {
-    if (jsonError) return;
+    if (jsonError || !hasChanges) return;
     let compactContent = '';
     try {
       compactContent = JSON.stringify(JSON.parse(content));
@@ -80,7 +104,10 @@ export default function TranslationsPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setOriginalContent(JSON.stringify(JSON.parse(content), null, 2));
+        const formatted = JSON.stringify(JSON.parse(content), null, 2);
+        setContent(formatted);
+        setOriginalContent(formatted);
+        setIsEditing(false);
         setSaveStatus('success');
         setTimeout(() => setSaveStatus(''), 3000);
       } else {
@@ -95,6 +122,8 @@ export default function TranslationsPage() {
     }
   };
 
+  const currentLangInfo = LANGUAGES.find(l => l.code === activeLang);
+
   return (
     <div className="p-6 max-w-5xl">
       <div className="flex items-center justify-between mb-6">
@@ -104,7 +133,7 @@ export default function TranslationsPage() {
         </div>
         <div className="flex items-center space-x-2">
           {saveStatus === 'success' && (
-            <span className="text-green-600 text-sm font-medium">✓ 保存成功！</span>
+            <span className="text-green-600 text-sm font-medium">✓ 保存成功！前台已刷新生效</span>
           )}
           {saveStatus === 'error' && (
             <span className="text-red-600 text-sm font-medium">✗ 保存失败</span>
@@ -115,20 +144,39 @@ export default function TranslationsPage() {
           >
             {showTemplate ? '收起模板' : '查看模板参考'}
           </button>
-          <button
-            onClick={handleFormat}
-            disabled={!!jsonError}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 disabled:opacity-40"
-          >
-            格式化 JSON
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || !canSave}
-            className="px-4 py-2 bg-primary-500 text-white rounded-md text-sm hover:bg-primary-600 disabled:opacity-50"
-          >
-            {saving ? '保存中...' : '保存文案'}
-          </button>
+          {!isEditing ? (
+            <button
+              onClick={handleEdit}
+              disabled={loading || !content}
+              className="px-4 py-2 bg-primary-500 text-white rounded-md text-sm hover:bg-primary-600 disabled:opacity-50"
+            >
+              {loading ? '加载中...' : '编辑文案'}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleFormat}
+                disabled={!!jsonError}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 disabled:opacity-40"
+              >
+                格式化 JSON
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !canSave}
+                className="px-4 py-2 bg-primary-500 text-white rounded-md text-sm hover:bg-primary-600 disabled:opacity-50"
+              >
+                {saving ? '保存中...' : '保存文案'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -169,12 +217,14 @@ export default function TranslationsPage() {
               </ul>
             </div>
             <div>
-              <p className="font-medium mb-1">【修改流程】</p>
+              <p className="font-medium mb-1">【操作流程】</p>
               <ol className="list-decimal pl-5 space-y-0.5">
                 <li>选择目标语言标签</li>
-                <li>在文本框中找到对应 key，修改 value 值</li>
+                <li>点击「编辑文案」进入可编辑状态</li>
+                <li>修改对应 key 的 value 值</li>
                 <li>点击「格式化 JSON」检查格式是否正确（错误时按钮变灰）</li>
-                <li>点击「保存文案」，JSON 校验通过后即时生效</li>
+                <li>点击「保存文案」，JSON 校验通过后即时生效，前台自动刷新</li>
+                <li>如需放弃修改，点击「取消」恢复原始内容</li>
               </ol>
             </div>
           </div>
@@ -183,17 +233,28 @@ export default function TranslationsPage() {
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
-          <h2 className="font-semibold text-gray-700 mb-3">选择语言</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-gray-700">选择语言</h2>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+              isEditing
+                ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                : 'bg-green-100 text-green-700 border border-green-300'
+            }`}>
+              {isEditing ? '✏️ 编辑模式' : '🔒 只读模式'}
+            </span>
+          </div>
           <div className="flex gap-2">
             {LANGUAGES.map(l => (
               <button
                 key={l.code}
                 onClick={() => setActiveLang(l.code)}
+                disabled={isEditing && hasChanges}
                 className={`px-4 py-2 rounded-lg text-sm transition-all flex items-center space-x-1.5 ${
                   activeLang === l.code
                     ? 'bg-primary-500 text-white shadow-sm font-medium'
                     : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                }`}
+                } ${isEditing && hasChanges ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isEditing && hasChanges ? '请先保存或取消当前编辑' : ''}
               >
                 <span>{l.flag}</span>
                 <span>{l.label}</span>
@@ -201,30 +262,45 @@ export default function TranslationsPage() {
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-2">
-            当前编辑：{LANGUAGES.find(l => l.code === activeLang)?.flag} {LANGUAGES.find(l => l.code === activeLang)?.label}。修改保存后所有页面将即时生效。
+            当前{isEditing ? '编辑' : '查看'}：{currentLangInfo?.flag} {currentLangInfo?.label}
+            {isEditing
+              ? '。修改保存后所有页面将即时生效。'
+              : '。点击「编辑文案」进入修改模式。'}
+            {isEditing && hasChanges && <span className="text-amber-600 ml-1">（有未保存的修改，请先保存或取消再切换语言）</span>}
           </p>
         </div>
 
         <div className="p-6">
-          {jsonError ? (
+          {isEditing && jsonError ? (
             <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
               <strong>JSON 格式错误，保存不会生效：</strong> {jsonError.message}
               {jsonError.line && <span className="ml-2">（约第 {jsonError.line} 行附近）</span>}
             </div>
-          ) : (
+          ) : isEditing ? (
             <div className="mb-4 rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700">
-              ✓ JSON 格式正确，可以保存
+              ✓ JSON 格式正确{hasChanges ? '，可以保存' : '（内容未修改）'}
+            </div>
+          ) : (
+            <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-700">
+              ℹ️ 当前为只读模式，显示数据库中正在使用的文案。点击右上角「编辑文案」进入修改。
             </div>
           )}
           <label className="block text-sm text-gray-600 mb-2">
             JSON 文案
             <span className="text-xs text-gray-400 ml-1">({activeLang})</span>
+            {loading && <span className="text-xs text-gray-400 ml-2">加载中...</span>}
           </label>
           <textarea
             value={content}
             onChange={e => setContent(e.target.value)}
-            className={`w-full h-[600px] px-4 py-3 border rounded-md text-sm font-mono leading-relaxed ${
-              jsonError ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
+            readOnly={!isEditing}
+            disabled={!isEditing || saving}
+            className={`w-full h-[600px] px-4 py-3 border rounded-md text-sm font-mono leading-relaxed transition-colors ${
+              isEditing
+                ? jsonError
+                  ? 'border-red-300 bg-red-50/30'
+                  : 'border-blue-300 bg-white'
+                : 'border-gray-200 bg-gray-50 text-gray-700 cursor-default'
             }`}
             spellCheck={false}
           />
@@ -234,8 +310,11 @@ export default function TranslationsPage() {
       <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-semibold text-blue-800 mb-2">📌 使用说明</h3>
         <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
-          <li>文案文件包含5个命名空间：IndexPage、ProductPage、ContactPage、Common、Admin</li>
-          <li>修改任意 key 的 value 即可实时影响前端对应位置的显示（key 不可改）</li>
+          <li>默认进入只读模式，显示数据库中正在使用的最新文案</li>
+          <li>点击「编辑文案」进入编辑模式，修改后点击「保存文案」即时生效</li>
+          <li>保存后自动切回只读模式，前台页面刷新后即可看到新文案</li>
+          <li>点击「取消」可放弃修改，恢复到最近一次保存的内容</li>
+          <li>文案包含5个命名空间：IndexPage、ProductPage、ContactPage、Common、Admin</li>
           <li>保存前系统自动校验 JSON 格式，<strong>格式错误时保存不生效</strong></li>
           <li>询盘表单中姓名、邮箱为必填，电话/WhatsApp/产品/留言为选填</li>
           <li>提交的询盘可在「询盘管理」页面查看</li>

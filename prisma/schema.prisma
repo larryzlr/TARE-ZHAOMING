@@ -1,11 +1,11 @@
-// prisma/schema.prisma (SQLite - 本地开发使用)
+// prisma/schema.prisma (PostgreSQL - 生产环境 Neon)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

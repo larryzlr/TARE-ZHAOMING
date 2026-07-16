@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 
     // 优先尝试 Vercel Blob（生产环境）
-    if (process.env.BLOB_READ_WRITE_TOKEN && process.env.VERCEL) {
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
         const blob = await put(`uploads/${fileName}`, file, {
           access: 'public',

@@ -21,7 +21,7 @@ const LANGUAGES = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
 ];
 
-const CONFIG_SECTIONS = [
+const CONFIG_SECTIONS: { key: string; title: string; fields: Field[] }[] = [
   {
     key: 'basic',
     title: '基本信息',

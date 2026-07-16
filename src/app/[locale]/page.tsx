@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { getAllProducts, getSiteConfig } from '@/lib/product-service';
-import { getAllCategories } from '@/lib/category-service';
+import { getAllCategories, CategoryWithChildren } from '@/lib/category-service';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -18,7 +18,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
 
   let products: any[] = [];
   let siteConfig: Record<string, string> = {};
-  let categories: any[] = [];
+  let categories: CategoryWithChildren[] = [];
   try {
     products = await getAllProducts(locale);
     siteConfig = await getSiteConfig(locale);

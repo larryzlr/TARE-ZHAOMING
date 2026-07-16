@@ -94,6 +94,7 @@ export async function getProductBySlug(slug: string, locale: string = 'en') {
 
 export async function getSiteConfig(lang: string) {
   try {
+    // 先查询当前语言的所有配置
     const configs = await prisma.siteConfig.findMany({
       where: { lang }
     });
@@ -102,6 +103,19 @@ export async function getSiteConfig(lang: string) {
     configs.forEach(config => {
       configMap[config.key] = config.value;
     });
+
+    // 字段级回退：如果当前语言缺失某些字段，从 'en' 补全
+    // 这样可以保证图片URL等共享配置在所有语言下都能显示
+    if (lang !== 'en') {
+      const enConfigs = await prisma.siteConfig.findMany({
+        where: { lang: 'en' }
+      });
+      enConfigs.forEach(config => {
+        if (!(config.key in configMap)) {
+          configMap[config.key] = config.value;
+        }
+      });
+    }
 
     return configMap;
   } catch (error) {

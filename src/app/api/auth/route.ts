@@ -13,8 +13,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 查找用户（支持用 email 或 name 登录）
+    const email = username.includes('@') ? username : `${username}@example.com`;
     const user = await prisma.user.findUnique({
-      where: { email: username.includes('@') ? username : `${username}@example.com` }
+      where: { email }
     });
 
     if (!user) {
@@ -34,8 +35,13 @@ export async function POST(request: NextRequest) {
       token,
       user: { id: user.id, email: user.email, name: user.name, role: user.role }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Auth error:', error);
-    return NextResponse.json({ error: '登录失败，请重试' }, { status: 500 });
+    // 返回更详细的错误信息便于排查
+    const errorMsg = error?.message || '登录失败，请重试';
+    return NextResponse.json({ 
+      error: '登录失败，请重试',
+      detail: process.env.NODE_ENV === 'development' ? errorMsg : undefined
+    }, { status: 500 });
   }
 }

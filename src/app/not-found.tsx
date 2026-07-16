@@ -1,24 +1,16 @@
-import {routing} from '@/lib/i18n/routing';
-import {notFound} from 'next/navigation';
-import {getTranslations} from 'next-intl/server';
+// src/app/not-found.tsx
+// 全局404页面 - 纯静态，不使用getTranslations避免构建时访问数据库
 
-export default async function NotFoundPage() {
-  const t = await getTranslations('Common');
-  
-  // Check if the route matches any of the configured locales
-  if (!routing.locales.some((locale) => locale === 'en')) {
-    notFound();
-  }
-
+export default function NotFoundPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('error')}</h2>
-      <p className="text-gray-600 mb-8">404 - Page Not Found</p>
-      <a 
-        href={`/${routing.defaultLocale}`} 
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Page Not Found</h2>
+      <p className="text-gray-600 mb-8">404 - The page you are looking for does not exist.</p>
+      <a
+        href="/en"
         className="px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition duration-300"
       >
-        {t('home')}
+        Back to Home
       </a>
     </div>
   );

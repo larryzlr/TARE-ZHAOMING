@@ -28,8 +28,10 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 
+    const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN;
+
     // 优先尝试 Vercel Blob（生产环境）
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    if (hasBlobToken) {
       try {
         const blob = await put(`uploads/${fileName}`, file, {
           access: 'public',
@@ -38,12 +40,23 @@ export async function POST(request: NextRequest) {
         });
         return NextResponse.json({ url: blob.url, fileName: blob.pathname });
       } catch (blobError: any) {
-        console.error('Vercel Blob upload failed, falling back to local:', blobError.message);
-        // 继续使用本地存储
+        console.error('Vercel Blob upload failed:', blobError?.message || blobError);
+        // Vercel 环境下无法写入本地文件系统，必须返回错误
+        if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+          return NextResponse.json({
+            error: `图片上传失败: ${blobError?.message || 'Blob存储错误'}`,
+          }, { status: 500 });
+        }
+        // 开发环境继续使用本地存储
       }
+    } else if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      // 生产环境无 Blob Token，直接报错
+      return NextResponse.json({
+        error: '服务器未配置 BLOB_READ_WRITE_TOKEN 环境变量',
+      }, { status: 500 });
     }
 
-    // 本地文件存储（开发环境）
+    // 本地文件存储（开发环境 fallback）
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadsDir, { recursive: true });
 
@@ -53,8 +66,11 @@ export async function POST(request: NextRequest) {
 
     const url = `/uploads/${fileName}`;
     return NextResponse.json({ url, fileName });
-  } catch (error) {
+  } catch (error: any) {
     console.error('POST /api/upload error:', error);
-    return NextResponse.json({ error: '上传失败' }, { status: 500 });
+    return NextResponse.json({
+      error: '上传失败',
+      detail: process.env.NODE_ENV === 'development' ? error?.message : undefined,
+    }, { status: 500 });
   }
 }

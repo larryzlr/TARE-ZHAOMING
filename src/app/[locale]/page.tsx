@@ -152,64 +152,64 @@ export default async function HomePage({ params }: { params: { locale: string } 
       </section>
 
       {/* 产品分类区域 */}
-      <SectionBackground images={bgCategories} overlayColor="white" overlayOpacity={bgCategoriesOpacity} className="py-20 bg-gray-50" id="categories">
+      <SectionBackground images={bgCategories} overlayColor="white" overlayOpacity={bgCategoriesOpacity} className="py-12 md:py-16 bg-gray-50" id="categories">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">{t('productCategories')}</h2>
-            <div className="w-20 h-1 bg-primary-500 mx-auto rounded-full"></div>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{t('productCategories')}</h2>
+            <div className="w-16 h-1 bg-primary-500 mx-auto rounded-full"></div>
           </div>
 
           {/* 二级分类布局 */}
-          <div className="max-w-5xl mx-auto space-y-8">
+          <div className="max-w-5xl mx-auto space-y-4">
             {categories.map((parent) => (
-              <div key={parent.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div key={parent.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* 一级分类标题 */}
-                <div className="flex items-center gap-4 px-6 py-5 bg-gradient-to-r from-primary-50 to-transparent border-b border-gray-100">
-                  <div className="bg-primary-100 w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary-50 to-transparent border-b border-gray-100">
+                  <div className="bg-primary-100 w-10 h-10 md:w-11 md:h-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                     {parent.icon ? (
                       parent.icon.startsWith('/') || parent.icon.startsWith('http') ? (
-                        <img src={parent.icon} alt={parent.name} className="w-14 h-14 md:w-16 md:h-16 object-cover" />
+                        <img src={parent.icon} alt={parent.name} className="w-10 h-10 md:w-11 md:h-11 object-cover" />
                       ) : (
-                        <svg className="w-7 h-7 md:w-9 md:h-9 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <svg className="w-5 h-5 md:w-6 md:h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d={parent.icon} />
                         </svg>
                       )
                     ) : (
-                      <span className="text-2xl md:text-3xl">📂</span>
+                      <span className="text-lg md:text-xl">📂</span>
                     )}
                   </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-800">{parent.name}</h3>
+                  <h3 className="text-base md:text-lg font-bold text-gray-800">{parent.name}</h3>
                 </div>
                 {/* 二级分类卡片 */}
                 {parent.children && parent.children.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
+                  <div className="grid grid-cols-3 md:grid-cols-4 gap-3 p-3">
                     {parent.children.map((child) => (
                       <a
                         key={child.id}
                         href={`/${locale}/products?category=${child.slug}`}
-                        className="flex flex-col items-center text-center p-6 rounded-xl hover:bg-primary-50 transition-all border border-transparent hover:border-primary-200 group"
+                        className="flex flex-col items-center text-center p-2 rounded-lg hover:bg-primary-50 transition-all border border-transparent hover:border-primary-200 group"
                       >
-                        <div className="bg-primary-50 w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary-100 transition-colors overflow-hidden">
+                        <div className="bg-primary-50 w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center mb-2 group-hover:bg-primary-100 transition-colors overflow-hidden">
                           {child.icon ? (
                             child.icon.startsWith('/') || child.icon.startsWith('http') ? (
-                              <img src={child.icon} alt={child.name} className="w-24 h-24 md:w-32 md:h-32 object-cover" />
+                              <img src={child.icon} alt={child.name} className="w-14 h-14 md:w-16 md:h-16 object-cover" />
                             ) : (
-                              <svg className="w-12 h-12 md:w-16 md:h-16 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                              <svg className="w-7 h-7 md:w-8 md:h-8 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d={child.icon} />
                               </svg>
                             )
                           ) : (
-                            <span className="text-4xl md:text-5xl">📦</span>
+                            <span className="text-2xl md:text-3xl">📦</span>
                           )}
                         </div>
-                        <span className="text-sm md:text-lg font-medium text-gray-700 group-hover:text-primary-600 transition-colors">
+                        <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors line-clamp-2">
                           {child.name}
                         </span>
                       </a>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-6">
+                  <div className="px-4 py-2">
                     <a
                       href={`/${locale}/products?category=${parent.slug}`}
                       className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700 text-sm"

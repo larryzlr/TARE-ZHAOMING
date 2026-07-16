@@ -3,6 +3,8 @@ import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { routing } from '@/lib/i18n/routing';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const category = await prisma.category.findUnique({

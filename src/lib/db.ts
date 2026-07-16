@@ -1,4 +1,5 @@
 // src/lib/db.ts
+// 懒加载 PrismaClient，避免构建时初始化导致 Vercel 构建失败
 
 import { PrismaClient } from '@prisma/client'
 
@@ -42,7 +43,20 @@ function createPrismaClient() {
   })
 }
 
-const client = globalThis.prisma || createPrismaClient()
-if (process.env.NODE_ENV !== 'production') globalThis.prisma = client
+function getClient(): PrismaClient {
+  if (!globalThis.prisma) {
+    globalThis.prisma = createPrismaClient()
+  }
+  return globalThis.prisma
+}
 
-export default client
+// 使用 Proxy 实现懒加载：模块加载时不创建 PrismaClient，首次访问属性时才创建
+const lazyPrisma = new Proxy({} as PrismaClient, {
+  get(_target, prop: string) {
+    const client = getClient()
+    const value = Reflect.get(client, prop)
+    return typeof value === 'function' ? value.bind(client) : value
+  }
+})
+
+export default lazyPrisma

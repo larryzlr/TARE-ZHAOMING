@@ -18,14 +18,18 @@ export async function POST(request: NextRequest) {
 
     // 1. 创建管理员用户
     const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@example.com' } });
+    const hashedPassword = await bcrypt.hash('Admin123', 10);
     if (!existingAdmin) {
-      const hashedPassword = await bcrypt.hash('admin123', 10);
       await prisma.user.create({
         data: { email: 'admin@example.com', name: '管理员', password: hashedPassword, role: 'admin' }
       });
       results.push('管理员用户已创建');
     } else {
-      results.push('管理员用户已存在');
+      await prisma.user.update({
+        where: { email: 'admin@example.com' },
+        data: { password: hashedPassword }
+      });
+      results.push('管理员密码已更新');
     }
 
     // 2. 创建产品分类

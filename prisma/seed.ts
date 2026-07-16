@@ -89,10 +89,10 @@ const DEFAULT_CATEGORIES = [
 
 async function main() {
   // 创建管理员用户
-  const hashedPassword = await bcrypt.hash('admin123', 10);
+  const hashedPassword = await bcrypt.hash('Admin123', 10);
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
-    update: {},
+    update: { password: hashedPassword },
     create: {
       email: 'admin@example.com',
       name: 'Admin User',

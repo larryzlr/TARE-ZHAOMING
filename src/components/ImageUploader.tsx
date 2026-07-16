@@ -100,7 +100,7 @@ export default function ImageUploader({ onUpload, buttonText = '上传图片', s
             <>
               <p className="font-medium text-primary-600">{buttonText}</p>
               <p className="text-xs mt-1">点击选择或拖拽图片到此处</p>
-              <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP、GIF、SVG，最大 5MB</p>
+              <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP、GIF、SVG，最大 8MB</p>
             </>
           )}
         </div>

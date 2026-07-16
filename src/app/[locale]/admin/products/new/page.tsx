@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ImageUploader from '@/components/ImageUploader';
+import { useToast } from '@/components/Toast';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -22,6 +23,7 @@ export default function NewProductPage() {
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) || 'en';
+  const toast = useToast();
 
   const [saving, setSaving] = useState(false);
   const [activeLang, setActiveLang] = useState('zh');
@@ -110,13 +112,14 @@ export default function NewProductPage() {
         body: JSON.stringify(form),
       });
       if (res.ok) {
+        toast('success', '产品创建成功！');
         router.push(`/${locale}/admin/products`);
       } else {
         const data = await res.json();
-        alert(data.error || '创建产品失败');
+        toast('error', data.error || '创建产品失败');
       }
     } catch {
-      alert('网络错误');
+      toast('error', '网络错误，请重试');
     } finally {
       setSaving(false);
     }

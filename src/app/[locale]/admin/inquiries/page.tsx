@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import { useToast } from '@/components/Toast';
 
 type Inquiry = {
   id: string;
@@ -40,7 +41,10 @@ export default function InquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [selected, setSelected] = useState<Inquiry | null>(null);
+  const toast = useToast();
 
   const fetchInquiries = async () => {
     setLoading(true);
@@ -62,6 +66,15 @@ export default function InquiriesPage() {
   const filtered = useMemo(() => {
     return inquiries.filter(item => {
       if (filterStatus !== 'all' && item.status !== filterStatus) return false;
+      const itemDate = new Date(item.createdAt);
+      if (dateFrom) {
+        const from = new Date(dateFrom + 'T00:00:00');
+        if (itemDate < from) return false;
+      }
+      if (dateTo) {
+        const to = new Date(dateTo + 'T23:59:59');
+        if (itemDate > to) return false;
+      }
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -73,7 +86,7 @@ export default function InquiriesPage() {
       }
       return true;
     });
-  }, [inquiries, filterStatus, search]);
+  }, [inquiries, filterStatus, search, dateFrom, dateTo]);
 
   const stats = useMemo(() => {
     return {
@@ -93,6 +106,9 @@ export default function InquiriesPage() {
     if (res.ok) {
       setInquiries(prev => prev.map(i => (i.id === id ? { ...i, status } : i)));
       setSelected(prev => (prev && prev.id === id ? { ...prev, status } : prev));
+      toast('success', '状态已更新');
+    } else {
+      toast('error', '操作失败');
     }
   };
 
@@ -102,6 +118,9 @@ export default function InquiriesPage() {
     if (res.ok) {
       setInquiries(prev => prev.filter(i => i.id !== id));
       setSelected(null);
+      toast('success', '询盘已删除');
+    } else {
+      toast('error', '操作失败');
     }
   };
 
@@ -166,13 +185,38 @@ export default function InquiriesPage() {
               已处理
             </button>
           </div>
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="搜索姓名/邮箱/产品/留言..."
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm w-64"
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+              placeholder="开始日期"
+            />
+            <span className="text-gray-400 text-sm">至</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+              placeholder="结束日期"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(''); setDateTo(''); }}
+                className="px-2 py-1.5 text-xs text-gray-500 hover:text-red-500"
+              >
+                清除
+              </button>
+            )}
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="搜索姓名/邮箱/产品/留言..."
+              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm w-64"
+            />
+          </div>
         </div>
 
         <div className="overflow-x-auto">

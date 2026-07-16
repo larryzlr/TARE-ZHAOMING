@@ -71,6 +71,7 @@ model Category {
   id          String   @id @default(cuid())
   slug        String   @unique
   icon        String   @default("")
+  parentId    String?
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -106,4 +107,17 @@ model Inquiry {
   updatedAt DateTime @updatedAt
 
   @@map("inquiries")
+}
+
+model OeNumber {
+  id          String   @id @default(cuid())
+  oeNumber    String   @unique
+  brand       String   @default("")
+  model       String   @default("")
+  resultType  String   @default("supported")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("oe_numbers")
 }

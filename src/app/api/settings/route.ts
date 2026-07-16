@@ -53,6 +53,8 @@ export async function PUT(request: NextRequest) {
     SUPPORTED_LOCALES.forEach(locale => {
       revalidatePath(`/${locale}`);
       revalidatePath(`/${locale}/products`);
+      revalidatePath(`/${locale}/products/[id]`);
+      revalidatePath(`/${locale}`, 'layout');
     });
 
     return NextResponse.json({ config: configMap });

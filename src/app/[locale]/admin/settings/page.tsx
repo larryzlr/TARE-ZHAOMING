@@ -2,6 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useToast } from '@/components/Toast';
+
+type FieldType = 'text' | 'textarea' | 'image' | 'multi-image' | 'opacity';
+type Field = {
+  key: string;
+  label: string;
+  type: FieldType;
+  placeholder?: string;
+  overlayColor?: 'white' | 'black';
+};
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -19,9 +29,26 @@ const CONFIG_SECTIONS = [
       { key: 'company_name', label: '公司名称', type: 'text', placeholder: '您的公司名称' },
       { key: 'site_title', label: '浏览器标题 (SEO)', type: 'text', placeholder: '公司名 - 标语' },
       { key: 'site_description', label: '网站描述 (SEO)', type: 'textarea', placeholder: '用于搜索引擎的简要描述' },
+      { key: 'logo', label: 'Logo 图片', type: 'image', placeholder: '上传或输入Logo图片链接' },
+    ]
+  },
+  {
+    key: 'contact',
+    title: '联系方式',
+    fields: [
       { key: 'whatsapp', label: 'WhatsApp 链接', type: 'text', placeholder: 'https://wa.me/861234567890' },
+      { key: 'telegram', label: 'Telegram 链接', type: 'text', placeholder: 'https://t.me/your_username' },
       { key: 'wechat', label: '微信号', type: 'text', placeholder: '您的微信号' },
-      { key: 'logo', label: 'Logo 图片链接', type: 'text', placeholder: '/images/logo.png' },
+      { key: 'wechat_qr', label: '微信二维码图片', type: 'image', placeholder: '上传微信二维码图片' },
+      { key: 'email', label: '联系邮箱', type: 'text', placeholder: 'info@example.com' },
+    ]
+  },
+  {
+    key: 'footer',
+    title: '底部文案',
+    fields: [
+      { key: 'copyright', label: '版权信息', type: 'text', placeholder: '© 2026 zhaoming. 保留所有权利' },
+      { key: 'tagline', label: '宣传语', type: 'text', placeholder: '安全制动，从这里开始' },
     ]
   },
   {
@@ -34,7 +61,24 @@ const CONFIG_SECTIONS = [
       { key: 'hero_btn1_link', label: '按钮1 链接', type: 'text', placeholder: '/products' },
       { key: 'hero_btn2_text', label: '按钮2 文字', type: 'text', placeholder: '获取报价' },
       { key: 'hero_btn2_link', label: '按钮2 链接', type: 'text', placeholder: '#contact' },
-      { key: 'hero_bg_image', label: '背景图片链接', type: 'text', placeholder: '留空则使用渐变背景' },
+      { key: 'hero_bg_image', label: '背景图片', type: 'multi-image', placeholder: '留空则使用渐变背景' },
+      { key: 'hero_bg_opacity', label: '背景遮罩透明度（黑色遮罩）', type: 'opacity', placeholder: '40', overlayColor: 'black' },
+    ]
+  },
+  {
+    key: 'section_bg',
+    title: '各区域背景图片',
+    fields: [
+      { key: 'bg_advantages', label: '核心优势区域背景', type: 'multi-image', placeholder: '留空则使用默认白色背景' },
+      { key: 'bg_advantages_opacity', label: '核心优势遮罩透明度', type: 'opacity', placeholder: '80', overlayColor: 'white' },
+      { key: 'bg_categories', label: '产品分类区域背景', type: 'multi-image', placeholder: '留空则使用默认灰色背景' },
+      { key: 'bg_categories_opacity', label: '产品分类遮罩透明度', type: 'opacity', placeholder: '80', overlayColor: 'white' },
+      { key: 'bg_products', label: '热门产品区域背景', type: 'multi-image', placeholder: '留空则使用默认白色背景' },
+      { key: 'bg_products_opacity', label: '热门产品遮罩透明度', type: 'opacity', placeholder: '80', overlayColor: 'white' },
+      { key: 'bg_factory', label: '工厂实力区域背景', type: 'multi-image', placeholder: '留空则使用默认灰色背景' },
+      { key: 'bg_factory_opacity', label: '工厂实力遮罩透明度', type: 'opacity', placeholder: '80', overlayColor: 'white' },
+      { key: 'bg_about', label: '关于我们区域背景', type: 'multi-image', placeholder: '留空则使用默认白色背景' },
+      { key: 'bg_about_opacity', label: '关于我们遮罩透明度', type: 'opacity', placeholder: '80', overlayColor: 'white' },
     ]
   }
 ];
@@ -42,11 +86,13 @@ const CONFIG_SECTIONS = [
 export default function AdminSettingsPage() {
   const params = useParams();
   const locale = (params.locale as string) || 'en';
+  const toast = useToast();
 
   const [activeLang, setActiveLang] = useState('zh');
   const [saving, setSaving] = useState(false);
   const [configs, setConfigs] = useState<Record<string, Record<string, string>>>({});
   const [saveStatus, setSaveStatus] = useState<string>('');
+  const [uploadingKey, setUploadingKey] = useState<string>('');
 
   useEffect(() => {
     Promise.all(
@@ -72,6 +118,61 @@ export default function AdminSettingsPage() {
     setSaveStatus('');
   };
 
+  // 多图字段：逗号分隔的URL转数组
+  const getMultiImages = (key: string): string[] => {
+    const val = currentConfig[key] || '';
+    return val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+  };
+
+  const updateMultiImage = (key: string, images: string[]) => {
+    updateField(key, images.join(','));
+  };
+
+  const addMultiImage = (key: string, url: string) => {
+    const images = getMultiImages(key);
+    if (url && !images.includes(url)) {
+      images.push(url);
+      updateMultiImage(key, images);
+    }
+  };
+
+  const removeMultiImage = (key: string, idx: number) => {
+    const images = getMultiImages(key);
+    images.splice(idx, 1);
+    updateMultiImage(key, images);
+  };
+
+  // 根据透明度字段key获取关联的背景图片URL（取第一张）
+  const getAssociatedImage = (opacityKey: string): string => {
+    const imageKey = opacityKey === 'hero_bg_opacity' ? 'hero_bg_image' : opacityKey.replace('_opacity', '');
+    const images = getMultiImages(imageKey);
+    return images[0] || '';
+  };
+
+  const handleUpload = async (key: string, file: File, isMulti: boolean = false) => {
+    setUploadingKey(key);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        if (isMulti) {
+          addMultiImage(key, data.url);
+        } else {
+          updateField(key, data.url);
+        }
+        toast('success', '图片上传成功');
+      } else {
+        toast('error', `上传失败：${data.error || '未知错误'}`);
+      }
+    } catch (e: any) {
+      toast('error', `上传失败：${e.message || '网络错误'}`);
+    } finally {
+      setUploadingKey('');
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setSaveStatus('');
@@ -83,12 +184,15 @@ export default function AdminSettingsPage() {
       });
       if (res.ok) {
         setSaveStatus('success');
+        toast('success', '设置保存成功！');
         setTimeout(() => setSaveStatus(''), 3000);
       } else {
         setSaveStatus('error');
+        toast('error', '设置保存失败，请重试');
       }
     } catch {
       setSaveStatus('error');
+      toast('error', '设置保存失败，请重试');
     } finally {
       setSaving(false);
     }
@@ -109,9 +213,11 @@ export default function AdminSettingsPage() {
         }
       }
       setSaveStatus('success');
+      toast('success', '设置保存成功！');
       setTimeout(() => setSaveStatus(''), 3000);
     } catch {
       setSaveStatus('error');
+      toast('error', '设置保存失败，请重试');
     } finally {
       setSaving(false);
     }
@@ -122,12 +228,6 @@ export default function AdminSettingsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">站点设置</h1>
         <div className="flex items-center space-x-2">
-          {saveStatus === 'success' && (
-            <span className="text-green-600 text-sm font-medium">✓ 保存成功！</span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="text-red-600 text-sm font-medium">✗ 保存失败</span>
-          )}
           <button
             onClick={handleSaveAll}
             disabled={saving}
@@ -170,11 +270,16 @@ export default function AdminSettingsPage() {
               <h3 className="font-semibold text-gray-700">{section.title}</h3>
             </div>
             <div className="px-6 py-4 space-y-4">
-              {section.fields.map(field => (
+              {section.fields.map(field => {
+                const isMulti = field.type === 'multi-image';
+                const multiImages = isMulti ? getMultiImages(field.key) : [];
+
+                return (
                 <div key={field.key}>
                   <label className="block text-sm text-gray-600 mb-1">
                     {field.label}
                     <span className="text-xs text-gray-400 ml-1">({activeLang})</span>
+                    {isMulti && <span className="text-xs text-blue-500 ml-1">（最多3张，可轮播切换）</span>}
                   </label>
                   {field.type === 'textarea' ? (
                     <textarea
@@ -183,6 +288,96 @@ export default function AdminSettingsPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                       rows={3}
                       placeholder={field.placeholder}
+                    />
+                  ) : isMulti ? (
+                    <div className="space-y-3">
+                      {/* 已上传图片列表 */}
+                      {multiImages.length > 0 && (
+                        <div className="flex gap-3 flex-wrap">
+                          {multiImages.map((img, idx) => (
+                            <div key={idx} className="relative">
+                              <img
+                                src={img}
+                                alt={`${field.label} ${idx + 1}`}
+                                className="h-24 w-32 object-cover rounded-md border border-gray-200"
+                              />
+                              <span className="absolute top-1 left-1 bg-black/60 text-white text-xs px-1.5 rounded">
+                                {idx + 1}
+                              </span>
+                              <button
+                                onClick={() => removeMultiImage(field.key, idx)}
+                                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* 上传按钮（还有空位时显示） */}
+                      {multiImages.length < 3 && (
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            placeholder="输入图片URL或上传"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const val = (e.target as HTMLInputElement).value.trim();
+                                if (val) { addMultiImage(field.key, val); (e.target as HTMLInputElement).value = ''; }
+                              }
+                            }}
+                          />
+                          <label
+                            className={`px-3 py-2 bg-primary-500 text-white rounded-md text-sm cursor-pointer hover:bg-primary-600 whitespace-nowrap transition-colors ${uploadingKey === field.key ? 'opacity-50 pointer-events-none' : ''}`}
+                          >
+                            {uploadingKey === field.key ? '上传中...' : `上传第${multiImages.length + 1}张`}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (file) handleUpload(field.key, file, true);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  ) : field.type === 'image' ? (
+                    <div className="flex gap-2 items-start">
+                      <input
+                        type="text"
+                        value={currentConfig[field.key] || ''}
+                        onChange={e => updateField(field.key, e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder={field.placeholder}
+                      />
+                      <label
+                        className={`px-3 py-2 bg-primary-500 text-white rounded-md text-sm cursor-pointer hover:bg-primary-600 whitespace-nowrap transition-colors ${uploadingKey === field.key ? 'opacity-50 pointer-events-none' : ''}`}
+                      >
+                        {uploadingKey === field.key ? '上传中...' : '上传图片'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUpload(field.key, file);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ) : field.type === 'opacity' ? (
+                    <OpacityControl
+                      field={field}
+                      value={currentConfig[field.key] || ''}
+                      onChange={v => updateField(field.key, v)}
+                      associatedImage={getAssociatedImage(field.key)}
                     />
                   ) : (
                     <input
@@ -193,15 +388,16 @@ export default function AdminSettingsPage() {
                       placeholder={field.placeholder}
                     />
                   )}
-                  {field.key === 'hero_bg_image' && currentConfig[field.key] && (
+                  {/* 单图预览 */}
+                  {field.type === 'image' && currentConfig[field.key] && (
                     <div className="mt-2 relative inline-block">
                       <img
                         src={currentConfig[field.key]}
-                        alt="背景图预览"
+                        alt={field.label}
                         className="h-24 rounded-md border border-gray-200 object-cover"
                       />
                       <button
-                        onClick={() => updateField('hero_bg_image', '')}
+                        onClick={() => updateField(field.key, '')}
                         className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center"
                       >
                         ✕
@@ -209,7 +405,8 @@ export default function AdminSettingsPage() {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}
@@ -239,3 +436,80 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+
+/**
+ * 透明度调节控件：滑块 + 实时预览
+ */
+function OpacityControl({
+  field,
+  value,
+  onChange,
+  associatedImage,
+}: {
+  field: Field;
+  value: string;
+  onChange: (v: string) => void;
+  associatedImage: string;
+}) {
+  // 解析当前透明度值，空值时使用placeholder作为默认值
+  const defaultVal = parseInt(field.placeholder || '80', 10);
+  const currentVal = value ? parseInt(value, 10) : defaultVal;
+  const opacity = Number.isFinite(currentVal) && currentVal >= 0 && currentVal <= 100 ? currentVal : defaultVal;
+  const overlayColor = field.overlayColor || 'white';
+  const overlayRgba = overlayColor === 'black'
+    ? `rgba(0, 0, 0, ${(opacity / 100).toFixed(2)})`
+    : `rgba(255, 255, 255, ${(opacity / 100).toFixed(2)})`;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={opacity}
+          onChange={e => onChange(e.target.value)}
+          className="flex-1 accent-primary-500 cursor-pointer"
+        />
+        <span className="text-sm font-medium text-gray-700 w-12 text-right">{opacity}%</span>
+        <button
+          onClick={() => onChange(String(defaultVal))}
+          className="text-xs text-gray-400 hover:text-primary-600 px-2 py-1 border border-gray-200 rounded"
+        >
+          重置
+        </button>
+      </div>
+      <p className="text-xs text-gray-400">
+        数值越大，遮罩越浓（{overlayColor === 'black' ? '黑色' : '白色'}遮罩）。当前默认值：{defaultVal}%
+      </p>
+
+      {/* 实时预览 */}
+      <div className="relative h-28 rounded-lg overflow-hidden border border-gray-200">
+        {associatedImage ? (
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${associatedImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-200 via-gray-200 to-secondary-200 flex items-center justify-center">
+            <span className="text-xs text-gray-400">暂无背景图，使用渐变预览</span>
+          </div>
+        )}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ backgroundColor: overlayRgba }}
+        >
+          <span className={`text-sm font-medium ${overlayColor === 'black' ? 'text-white' : 'text-gray-800'}`}>
+            遮罩预览 {opacity}%
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+

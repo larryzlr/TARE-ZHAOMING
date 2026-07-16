@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import InquiryForm from '@/components/InquiryForm';
+import OeNumberQuery from '@/components/OeNumberQuery';
+import SectionBackground from '@/components/SectionBackground';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,53 +38,85 @@ export default async function HomePage({ params }: { params: { locale: string } 
   const heroBtn1Link = siteConfig.hero_btn1_link || `/${locale}/products`;
   const heroBtn2Text = siteConfig.hero_btn2_text || t('getQuote');
   const heroBtn2Link = siteConfig.hero_btn2_link || '#contact';
-  const heroBgImage = siteConfig.hero_bg_image || '';
 
-  const heroStyle = heroBgImage
-    ? { backgroundImage: `url(${heroBgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+  // 解析多图背景（逗号分隔）
+  const parseImages = (val: string): string[] => val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const heroImages = parseImages(siteConfig.hero_bg_image || '');
+  const bgAdvantages = parseImages(siteConfig.bg_advantages || '');
+  const bgCategories = parseImages(siteConfig.bg_categories || '');
+  const bgProducts = parseImages(siteConfig.bg_products || '');
+  const bgFactory = parseImages(siteConfig.bg_factory || '');
+  const bgAbout = parseImages(siteConfig.bg_about || '');
+
+  // 解析遮罩透明度（0-100，默认值与原配置一致：hero=40，其余=80）
+  const parseOpacity = (val: string | undefined, def: number): number => {
+    const n = parseInt(val || '', 10);
+    return Number.isFinite(n) && n >= 0 && n <= 100 ? n : def;
+  };
+  const heroBgOpacity = parseOpacity(siteConfig.hero_bg_opacity, 40);
+  const bgAdvantagesOpacity = parseOpacity(siteConfig.bg_advantages_opacity, 80);
+  const bgCategoriesOpacity = parseOpacity(siteConfig.bg_categories_opacity, 80);
+  const bgProductsOpacity = parseOpacity(siteConfig.bg_products_opacity, 80);
+  const bgFactoryOpacity = parseOpacity(siteConfig.bg_factory_opacity, 80);
+  const bgAboutOpacity = parseOpacity(siteConfig.bg_about_opacity, 80);
+
+  const hasHeroBg = heroImages.length > 0;
 
   return (
     <div className="min-h-screen bg-white">
       <Header
         companyName={siteConfig.company_name || 'ZHAOMING'}
+        logo={siteConfig.logo}
         whatsapp={siteConfig.whatsapp}
+        telegram={siteConfig.telegram}
         categories={categories}
       />
 
-      <section className={`relative py-24 md:py-36 overflow-hidden ${heroBgImage ? 'text-white' : 'bg-gradient-to-br from-primary-50 via-white to-secondary-50'}`} style={heroStyle}>
-        {heroBgImage && <div className="absolute inset-0 bg-black/40"></div>}
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight ${heroBgImage ? 'text-white' : 'text-gray-800'}`}>
-            {heroTitle}
-          </h1>
-          <p className={`text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed ${heroBgImage ? 'text-gray-200' : 'text-gray-600'}`}>
-            {heroSubtitle}
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a
-              href={heroBtn1Link}
-              className="px-8 py-3.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm"
-            >
-              {heroBtn1Text}
-            </a>
-            <a
-              href={heroBtn2Link}
-              className={`px-8 py-3.5 font-medium rounded-lg border-2 transition-colors ${heroBgImage ? 'bg-white/20 text-white border-white/50 hover:bg-white/30' : 'bg-white text-primary-600 border-primary-500 hover:bg-primary-50'}`}
-            >
-              {heroBtn2Text}
-            </a>
+      {/* Hero 区域 */}
+      {hasHeroBg ? (
+        <SectionBackground images={heroImages} overlayColor="black" overlayOpacity={heroBgOpacity} className={`py-24 md:py-36 text-white`}>
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white">
+              {heroTitle}
+            </h1>
+            <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed text-gray-200">
+              {heroSubtitle}
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <a href={heroBtn1Link} className="px-8 py-3.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm">
+                {heroBtn1Text}
+              </a>
+              <a href={heroBtn2Link} className="px-8 py-3.5 font-medium rounded-lg border-2 bg-white/20 text-white border-white/50 hover:bg-white/30 transition-colors">
+                {heroBtn2Text}
+              </a>
+            </div>
           </div>
-        </div>
-        {!heroBgImage && (
-          <>
-            <div className="absolute top-20 right-10 w-72 h-72 bg-primary-100 rounded-full opacity-20 blur-3xl"></div>
-            <div className="absolute bottom-10 left-10 w-96 h-96 bg-secondary-100 rounded-full opacity-20 blur-3xl"></div>
-          </>
-        )}
-      </section>
+        </SectionBackground>
+      ) : (
+        <section className="relative py-24 md:py-36 overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-gray-800">
+              {heroTitle}
+            </h1>
+            <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed text-gray-600">
+              {heroSubtitle}
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <a href={heroBtn1Link} className="px-8 py-3.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm">
+                {heroBtn1Text}
+              </a>
+              <a href={heroBtn2Link} className="px-8 py-3.5 font-medium rounded-lg border-2 bg-white text-primary-600 border-primary-500 hover:bg-primary-50 transition-colors">
+                {heroBtn2Text}
+              </a>
+            </div>
+          </div>
+          <div className="absolute top-20 right-10 w-72 h-72 bg-primary-100 rounded-full opacity-20 blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-96 h-96 bg-secondary-100 rounded-full opacity-20 blur-3xl"></div>
+        </section>
+      )}
 
-      <section id="advantages" className="py-20 bg-white">
+      {/* 核心优势区域 */}
+      <SectionBackground images={bgAdvantages} overlayColor="white" overlayOpacity={bgAdvantagesOpacity} className="py-20 bg-white" id="advantages">
         <div className="container mx-auto px-4">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">{t('ourAdvantages')}</h2>
@@ -109,40 +143,89 @@ export default async function HomePage({ params }: { params: { locale: string } 
             ))}
           </div>
         </div>
+      </SectionBackground>
+
+      <section id="oe-query" className="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <OeNumberQuery />
+        </div>
       </section>
 
-      <section id="categories" className="py-20 bg-gray-50">
+      {/* 产品分类区域 */}
+      <SectionBackground images={bgCategories} overlayColor="white" overlayOpacity={bgCategoriesOpacity} className="py-20 bg-gray-50" id="categories">
         <div className="container mx-auto px-4">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">{t('productCategories')}</h2>
             <div className="w-20 h-1 bg-primary-500 mx-auto rounded-full"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-            {categories.map((cat) => (
-              <a
-                key={cat.slug}
-                href={`/${locale}/products?category=${cat.slug}`}
-                className="bg-white rounded-xl p-6 text-center hover:shadow-md transition-all border border-gray-100 hover:border-primary-200 group"
-              >
-                <div className="bg-primary-50 w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-primary-100 transition-colors">
-                  {cat.icon ? (
-                    <svg className="w-7 h-7 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={cat.icon} />
-                    </svg>
-                  ) : (
-                    <span className="text-2xl">📦</span>
-                  )}
+
+          {/* 二级分类布局 */}
+          <div className="max-w-5xl mx-auto space-y-8">
+            {categories.map((parent) => (
+              <div key={parent.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {/* 一级分类标题 */}
+                <div className="flex items-center gap-4 px-6 py-5 bg-gradient-to-r from-primary-50 to-transparent border-b border-gray-100">
+                  <div className="bg-primary-100 w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                    {parent.icon ? (
+                      parent.icon.startsWith('/') || parent.icon.startsWith('http') ? (
+                        <img src={parent.icon} alt={parent.name} className="w-14 h-14 md:w-16 md:h-16 object-cover" />
+                      ) : (
+                        <svg className="w-7 h-7 md:w-9 md:h-9 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d={parent.icon} />
+                        </svg>
+                      )
+                    ) : (
+                      <span className="text-2xl md:text-3xl">📂</span>
+                    )}
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-800">{parent.name}</h3>
                 </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors">
-                  {cat.name}
-                </span>
-              </a>
+                {/* 二级分类卡片 */}
+                {parent.children && parent.children.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
+                    {parent.children.map((child) => (
+                      <a
+                        key={child.id}
+                        href={`/${locale}/products?category=${child.slug}`}
+                        className="flex flex-col items-center text-center p-6 rounded-xl hover:bg-primary-50 transition-all border border-transparent hover:border-primary-200 group"
+                      >
+                        <div className="bg-primary-50 w-24 h-24 md:w-32 md:h-32 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary-100 transition-colors overflow-hidden">
+                          {child.icon ? (
+                            child.icon.startsWith('/') || child.icon.startsWith('http') ? (
+                              <img src={child.icon} alt={child.name} className="w-24 h-24 md:w-32 md:h-32 object-cover" />
+                            ) : (
+                              <svg className="w-12 h-12 md:w-16 md:h-16 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d={child.icon} />
+                              </svg>
+                            )
+                          ) : (
+                            <span className="text-4xl md:text-5xl">📦</span>
+                          )}
+                        </div>
+                        <span className="text-sm md:text-lg font-medium text-gray-700 group-hover:text-primary-600 transition-colors">
+                          {child.name}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6">
+                    <a
+                      href={`/${locale}/products?category=${parent.slug}`}
+                      className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700 text-sm"
+                    >
+                      查看该分类下的产品 →
+                    </a>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
-      </section>
+      </SectionBackground>
 
-      <section id="products" className="py-20 bg-white">
+      {/* 热门产品区域 */}
+      <SectionBackground images={bgProducts} overlayColor="white" overlayOpacity={bgProductsOpacity} className="py-20 bg-white" id="products">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-12">
             <div>
@@ -172,17 +255,15 @@ export default async function HomePage({ params }: { params: { locale: string } 
           )}
 
           <div className="text-center mt-10 sm:hidden">
-            <a
-              href={`/${locale}/products`}
-              className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700"
-            >
+            <a href={`/${locale}/products`} className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700">
               {t('viewAll')} →
             </a>
           </div>
         </div>
-      </section>
+      </SectionBackground>
 
-      <section id="factory" className="py-20 bg-gray-50">
+      {/* 工厂实力区域 */}
+      <SectionBackground images={bgFactory} overlayColor="white" overlayOpacity={bgFactoryOpacity} className="py-20 bg-gray-50" id="factory">
         <div className="container mx-auto px-4">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">{t('factoryStrength')}</h2>
@@ -208,9 +289,10 @@ export default async function HomePage({ params }: { params: { locale: string } 
             ))}
           </div>
         </div>
-      </section>
+      </SectionBackground>
 
-      <section id="about" className="py-20 bg-white">
+      {/* 关于我们区域 */}
+      <SectionBackground images={bgAbout} overlayColor="white" overlayOpacity={bgAboutOpacity} className="py-20 bg-white" id="about">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">{t('aboutUs')}</h2>
@@ -232,14 +314,14 @@ export default async function HomePage({ params }: { params: { locale: string } 
             </div>
           </div>
         </div>
-      </section>
+      </SectionBackground>
 
       <section id="contact" className="py-20 bg-gradient-to-br from-primary-500 to-primary-600">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">{t('inquiryTitle')}</h2>
             <p className="text-primary-100 mb-10">{t('inquirySubtitle')}</p>
-            <InquiryForm locale={locale} whatsappLink={siteConfig.whatsapp} />
+            <InquiryForm locale={locale} whatsappLink={siteConfig.whatsapp} telegramLink={siteConfig.telegram} />
           </div>
         </div>
       </section>
@@ -247,14 +329,20 @@ export default async function HomePage({ params }: { params: { locale: string } 
       <Footer
         companyName={siteConfig.company_name || 'ZHAOMING'}
         whatsapp={siteConfig.whatsapp}
+        telegram={siteConfig.telegram}
         wechat={siteConfig.wechat}
+        email={siteConfig.email}
+        copyright={siteConfig.copyright}
+        tagline={siteConfig.tagline}
         locale={locale}
         categories={categories}
       />
 
       <ContactFloatingButtons config={{
         whatsapp: siteConfig.whatsapp,
-        wechat: siteConfig.wechat
+        telegram: siteConfig.telegram,
+        wechat: siteConfig.wechat,
+        wechatQr: siteConfig.wechat_qr
       }} />
     </div>
   );

@@ -140,5 +140,24 @@
     "logo": "Logo",
     "uploadImage": "Télécharger une image",
     "generalSettings": "Paramètres généraux"
+  },
+  "OeQuery": {
+    "title": "Recherche numéro OE",
+    "subtitle": "Saisissez votre numéro OE pour vérifier la disponibilité",
+    "placeholder": "Saisir le numéro OE, ex. 04465-06010",
+    "searching": "Recherche...",
+    "searchBtn": "Rechercher",
+    "supportedTitle": "Numéro OE supporté",
+    "customTitle": "Personnalisation disponible",
+    "supportedDesc": "Nous fabriquons ce numéro OE. Demandez un devis.",
+    "customDesc": "Ce numéro OE est disponible pour un développement personnalisé. Contactez-nous pour une solution sur mesure.",
+    "brandLabel": "Marque",
+    "modelLabel": "Modèle",
+    "suggestions": "Vouliez-vous dire :",
+    "inquiryBtn": "Demander un devis",
+    "customBtn": "Personnaliser",
+    "closeBtn": "Fermer",
+    "formatError": "Format de numéro OE invalide. Format valide : commence et se termine par une lettre ou un chiffre, peut contenir des lettres, chiffres, espaces, points (.), tirets (-), longueur 4-30 caractères. Exemples : 04465-06010, GDB1234, 0 986 461 234, 13.0460-2835.2",
+    "formatHint": "Pour les demandes de format de numéro OE spécial, veuillez nous contacter via le formulaire de demande"
   }
 }

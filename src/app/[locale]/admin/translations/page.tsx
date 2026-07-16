@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useToast } from '@/components/Toast';
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -33,6 +34,7 @@ function validateJson(text: string): JsonError {
 export default function TranslationsPage() {
   const params = useParams();
   const locale = (params.locale as string) || 'en';
+  const toast = useToast();
 
   const [activeLang, setActiveLang] = useState('zh');
   const [content, setContent] = useState('');
@@ -109,14 +111,15 @@ export default function TranslationsPage() {
         setOriginalContent(formatted);
         setIsEditing(false);
         setSaveStatus('success');
+        toast('success', '文案保存成功！前台已刷新生效');
         setTimeout(() => setSaveStatus(''), 3000);
       } else {
         setSaveStatus('error');
-        alert(`保存失败：${data.error || '未知错误'}。文案未保存。`);
+        toast('error', `保存失败：${data.error || '未知错误'}`);
       }
     } catch (e: any) {
       setSaveStatus('error');
-      alert(`网络错误：${e.message || '请求失败'}。文案未保存。`);
+      toast('error', `网络错误：${e.message || '请求失败'}`);
     } finally {
       setSaving(false);
     }

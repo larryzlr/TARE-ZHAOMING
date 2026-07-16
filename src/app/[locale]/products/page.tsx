@@ -72,7 +72,9 @@ export default async function ProductsPage({
     <div className="min-h-screen bg-gray-50">
       <Header
         companyName={siteConfig.company_name || 'ZHAOMING'}
+        logo={siteConfig.logo}
         whatsapp={siteConfig.whatsapp}
+        telegram={siteConfig.telegram}
         categories={categories}
       />
 
@@ -141,14 +143,20 @@ export default async function ProductsPage({
       <Footer
         companyName={siteConfig.company_name || 'ZHAOMING'}
         whatsapp={siteConfig.whatsapp}
+        telegram={siteConfig.telegram}
         wechat={siteConfig.wechat}
+        email={siteConfig.email}
+        copyright={siteConfig.copyright}
+        tagline={siteConfig.tagline}
         locale={locale}
         categories={categories}
       />
 
       <ContactFloatingButtons config={{
         whatsapp: siteConfig.whatsapp,
-        wechat: siteConfig.wechat
+        telegram: siteConfig.telegram,
+        wechat: siteConfig.wechat,
+        wechatQr: siteConfig.wechat_qr
       }} />
     </div>
   );

@@ -140,5 +140,24 @@
     "logo": "Logotipo",
     "uploadImage": "Subir imagen",
     "generalSettings": "Configuración general"
+  },
+  "OeQuery": {
+    "title": "Consulta de número OE",
+    "subtitle": "Ingrese su número OE para verificar disponibilidad",
+    "placeholder": "Ingrese número OE, ej. 04465-06010",
+    "searching": "Buscando...",
+    "searchBtn": "Buscar",
+    "supportedTitle": "Número OE soportado",
+    "customTitle": "Personalización disponible",
+    "supportedDesc": "Fabricamos este número OE. Solicite una cotización.",
+    "customDesc": "Este número OE está disponible para desarrollo personalizado. Contáctenos para una solución a medida.",
+    "brandLabel": "Marca",
+    "modelLabel": "Modelo",
+    "suggestions": "¿Buscabas:",
+    "inquiryBtn": "Solicitar cotización",
+    "customBtn": "Consultar personalización",
+    "closeBtn": "Cerrar",
+    "formatError": "Formato de número OE no válido. Formato válido: comienza y termina con letra o número, puede contener letras, números, espacios, puntos (.), guiones (-), longitud 4-30 caracteres. Ejemplos: 04465-06010, GDB1234, 0 986 461 234, 13.0460-2835.2",
+    "formatHint": "Para solicitudes de formato de número OE especial, contáctenos a través del formulario de consulta"
   }
 }

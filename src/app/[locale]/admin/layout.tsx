@@ -1,20 +1,54 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { ToastProvider } from '@/components/Toast';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const locale = pathname.split('/')[1] || 'en';
+  const [authChecked, setAuthChecked] = useState(false);
 
-  if (pathname.includes('/admin/login')) {
+  const isAdminLogin = pathname.includes('/admin/login');
+
+  useEffect(() => {
+    if (isAdminLogin) {
+      setAuthChecked(true);
+      return;
+    }
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      router.replace(`/${locale}/admin/login`);
+      return;
+    }
+    setAuthChecked(true);
+  }, [pathname, isAdminLogin, locale, router]);
+
+  if (isAdminLogin) {
     return <>{children}</>;
   }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-400 text-sm">正在验证登录状态...</div>
+      </div>
+    );
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    router.push(`/${locale}/admin/login`);
+  };
 
   const navItems = [
     { href: `/${locale}/admin/dashboard`, label: '仪表板' },
     { href: `/${locale}/admin/products`, label: '产品管理' },
     { href: `/${locale}/admin/categories`, label: '分类管理' },
+    { href: `/${locale}/admin/oe-numbers`, label: 'OE号管理' },
     { href: `/${locale}/admin/inquiries`, label: '询盘管理' },
     { href: `/${locale}/admin/translations`, label: '文案管理' },
     { href: `/${locale}/admin/settings`, label: '站点设置' },
@@ -44,14 +78,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             );
           })}
         </nav>
-        <div className="p-5 border-t border-gray-200">
-          <Link href={`/${locale}`} className="text-sm text-gray-500 hover:text-gray-700">
+        <div className="p-5 border-t border-gray-200 space-y-3">
+          <Link href={`/${locale}`} className="block text-sm text-gray-500 hover:text-gray-700">
             ← 返回网站
           </Link>
+          <button
+            onClick={handleLogout}
+            className="block text-sm text-red-500 hover:text-red-700"
+          >
+            退出登录
+          </button>
         </div>
       </aside>
       <main className="flex-1 bg-gray-50 overflow-auto">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </main>
     </div>
   );

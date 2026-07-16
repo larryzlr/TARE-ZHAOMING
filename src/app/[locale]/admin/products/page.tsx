@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useToast } from '@/components/Toast';
 
 interface Product {
   id: string;
@@ -17,9 +18,10 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const locale = pathname.split('/')[1] || 'en';
+  const toast = useToast();
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch(`/api/products?locale=zh`)
       .then(res => res.json())
       .then(data => setProducts(data.products || []))
       .catch(console.error)
@@ -93,8 +95,13 @@ export default function AdminProductsPage() {
                     <button
                       onClick={async () => {
                         if (!confirm('确定删除此产品？')) return;
-                        await fetch(`/api/products/${product.id}`, { method: 'DELETE' });
-                        setProducts(products.filter(p => p.id !== product.id));
+                        const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' });
+                        if (res.ok) {
+                          toast('success', '产品已删除');
+                          setProducts(products.filter(p => p.id !== product.id));
+                        } else {
+                          toast('error', '删除失败');
+                        }
                       }}
                       className="text-red-500 hover:text-red-700 text-sm"
                     >

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ImageUploader from '@/components/ImageUploader';
+import { useToast } from '@/components/Toast';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -23,6 +24,7 @@ export default function EditProductPage() {
   const params = useParams();
   const id = params.id as string;
   const locale = params.locale as string;
+  const toast = useToast();
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -78,7 +80,7 @@ export default function EditProductPage() {
         setLoading(false);
       })
       .catch(() => {
-        alert('加载产品失败');
+        toast('error', '加载产品失败');
         router.push(`/${locale}/admin/products`);
       });
   }, [id, locale, router]);
@@ -143,13 +145,14 @@ export default function EditProductPage() {
         body: JSON.stringify(form),
       });
       if (res.ok) {
+        toast('success', '产品更新成功！');
         router.push(`/${locale}/admin/products`);
       } else {
         const data = await res.json();
-        alert(data.error || '更新产品失败');
+        toast('error', data.error || '更新产品失败');
       }
     } catch {
-      alert('网络错误');
+      toast('error', '网络错误，请重试');
     } finally {
       setSaving(false);
     }

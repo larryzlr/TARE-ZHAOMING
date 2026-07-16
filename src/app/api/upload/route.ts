@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_SIZE = 8 * 1024 * 1024; // 8MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,19 +20,37 @@ export async function POST(request: NextRequest) {
     }
 
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: '文件大小不能超过 5MB' }, { status: 400 });
+      return NextResponse.json({ error: '文件大小不能超过 8MB' }, { status: 400 });
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `uploads/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 
-    const blob = await put(fileName, file, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      addRandomSuffix: false,
-    });
+    // 优先尝试 Vercel Blob（生产环境）
+    if (process.env.BLOB_READ_WRITE_TOKEN && process.env.VERCEL) {
+      try {
+        const blob = await put(`uploads/${fileName}`, file, {
+          access: 'public',
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+          addRandomSuffix: false,
+        });
+        return NextResponse.json({ url: blob.url, fileName: blob.pathname });
+      } catch (blobError: any) {
+        console.error('Vercel Blob upload failed, falling back to local:', blobError.message);
+        // 继续使用本地存储
+      }
+    }
 
-    return NextResponse.json({ url: blob.url, fileName: blob.pathname });
+    // 本地文件存储（开发环境）
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    await mkdir(uploadsDir, { recursive: true });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const filePath = path.join(uploadsDir, fileName);
+    await writeFile(filePath, buffer);
+
+    const url = `/uploads/${fileName}`;
+    return NextResponse.json({ url, fileName });
   } catch (error) {
     console.error('POST /api/upload error:', error);
     return NextResponse.json({ error: '上传失败' }, { status: 500 });

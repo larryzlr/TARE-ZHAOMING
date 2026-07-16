@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       orderBy: { sortOrder: 'asc' }
     });
 
-    const result = categories.map(cat => {
+    const mapped = categories.map(cat => {
       const translation = cat.translations.find(t => t.lang === lang)
         || cat.translations.find(t => t.lang === 'en')
         || cat.translations[0];
@@ -22,13 +22,21 @@ export async function GET(request: NextRequest) {
         id: cat.id,
         slug: cat.slug,
         icon: cat.icon,
+        parentId: cat.parentId,
         sortOrder: cat.sortOrder,
         name: translation?.name || cat.slug,
         translations: cat.translations
       };
     });
 
-    return NextResponse.json({ categories: result });
+    // 构建树形结构
+    const roots = mapped.filter(c => !c.parentId);
+    const tree = roots.map(root => ({
+      ...root,
+      children: mapped.filter(c => c.parentId === root.id)
+    }));
+
+    return NextResponse.json({ categories: tree, flat: mapped });
   } catch (error) {
     console.error('GET /api/categories error:', error);
     return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
@@ -38,7 +46,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { slug, icon = '', sortOrder = 0, translations } = body;
+    const { slug, icon = '', parentId = null, sortOrder = 0, translations } = body;
 
     if (!slug || !translations || !Array.isArray(translations)) {
       return NextResponse.json({ error: 'slug and translations are required' }, { status: 400 });
@@ -53,6 +61,7 @@ export async function POST(request: NextRequest) {
       data: {
         slug,
         icon,
+        parentId: parentId || null,
         sortOrder: Number(sortOrder),
         translations: {
           create: translations.map((t: { lang: string; name: string }) => ({

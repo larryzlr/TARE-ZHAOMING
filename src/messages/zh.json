@@ -140,5 +140,24 @@
     "logo": "标志",
     "uploadImage": "上传图片",
     "generalSettings": "常规设置"
+  },
+  "OeQuery": {
+    "title": "OE号查询",
+    "subtitle": "输入您的OE号，快速查询是否支持",
+    "placeholder": "请输入OE号，如 04465-06010",
+    "searching": "查询中...",
+    "searchBtn": "查询",
+    "supportedTitle": "支持该OE号",
+    "customTitle": "支持定制",
+    "supportedDesc": "我们已生产该OE号产品，可直接下单或询盘获取报价",
+    "customDesc": "该OE号支持定制开发，请联系我们获取定制方案",
+    "brandLabel": "品牌",
+    "modelLabel": "车型",
+    "suggestions": "您是否在找：",
+    "inquiryBtn": "立即询盘",
+    "customBtn": "咨询定制",
+    "closeBtn": "关闭",
+    "formatError": "OE号格式不正确。正确格式：字母或数字开头结尾，可含字母、数字、空格、点(.)、连字符(-)，长度4-30字符。示例：04465-06010、GDB1234、0 986 461 234、13.0460-2835.2",
+    "formatHint": "如有特殊OE号格式需求，请通过询盘功能联系我们"
   }
 }

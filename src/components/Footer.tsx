@@ -4,12 +4,16 @@ import Link from 'next/link';
 type FooterProps = {
   companyName?: string;
   whatsapp?: string;
+  telegram?: string;
   wechat?: string;
+  email?: string;
+  copyright?: string;
+  tagline?: string;
   locale?: string;
   categories?: { slug: string; name: string }[];
 };
 
-export default function Footer({ companyName = 'ZHAOMING', whatsapp, wechat, locale = 'en', categories = [] }: FooterProps) {
+export default function Footer({ companyName = 'ZHAOMING', whatsapp, telegram, wechat, email, copyright, tagline, locale = 'en', categories = [] }: FooterProps) {
   const t = useTranslations('Common');
 
   return (
@@ -55,6 +59,14 @@ export default function Footer({ companyName = 'ZHAOMING', whatsapp, wechat, loc
           <div>
             <h3 className="text-base font-semibold mb-4">{t('contact')}</h3>
             <ul className="space-y-3">
+              {telegram && (
+                <li>
+                  <a href={telegram} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-400 text-sm hover:text-white transition-colors">
+                    <svg className="w-4 h-4 text-[#0088cc]" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.02.322-.046.476.09.16.136.181.37.181.552 0 .18-.014 2.12-.014 2.12l.002.425s.02.374-.126.525a.497.497 0 0 1-.369.14c-.148-.003-.318-.008-.508-.014l-.025.013c-.188-.007-.391-.014-.601-.018-.357-.008-.736-.012-1.067-.012-.31 0-.59.003-.807.012l-.096.003c-.158.006-.326.015-.49.026-.084.013-.18.042-.255.102-.052.04-.098.1-.125.183l-.008.025c-.02.064-.033.135-.033.212 0 .075.01.146.03.21l.01.024c.055.14.153.25.28.32.012.003.025.01.04.015.13.054.354.098.73.098.17 0 .38-.006.608-.017l.044-.002c.252-.012.513-.028.755-.048l.05-.004c.12-.01.235-.02.34-.033.058-.007.112-.014.162-.02.083-.013.186-.03.293-.05.028-.006.056-.012.083-.018.1-.023.2-.048.293-.075l.025-.007c.1-.03.195-.062.28-.095l.012-.005c.073-.028.14-.056.2-.084.018-.008.035-.016.052-.025.042-.02.1-.053.167-.1.023-.017.046-.034.067-.052.024-.02.046-.04.067-.062l.015-.014c.028-.028.054-.057.078-.089.01-.013.02-.027.03-.04.034-.05.05-.093.05-.13a.134.134 0 0 0-.018-.068l-.005-.008a.26.26 0 0 0-.047-.054l-.012-.01a.7.7 0 0 0-.078-.052l-.008-.005c-.024-.013-.05-.026-.076-.038a.934.934 0 0 0-.197-.062l-.02-.004a.742.742 0 0 0-.094-.01c-.04-.003-.083-.005-.126-.005h-.037l-.098.003-.015.001-.037.002-.064.003-.1.003-.018.001-.08.002h-.027l-.12.001c-.16 0-.317.0-.47-.002a.14.14 0 0 1-.022 0l-.14-.003-.097-.003-.19-.006-.178-.007-.252-.01-.143-.008-.24-.014-.065-.005-.168-.013-.017-.002-.103-.01-.073-.01-.036-.005-.064-.01-.01-.002-.066-.013-.05-.012-.022-.007c-.03-.01-.058-.02-.085-.033l-.014-.007a.363.363 0 0 1-.08-.053l-.006-.005a.236.236 0 0 1-.062-.078l-.002-.005a.194.194 0 0 1-.016-.08l.001-.022.002-.012a.228.228 0 0 1 .026-.078l.006-.01a.306.306 0 0 1 .034-.046l.006-.007c.016-.016.035-.033.055-.05l.01-.007c.012-.01.025-.018.04-.027l.016-.01c.025-.014.053-.028.085-.041l.012-.005c.043-.018.092-.035.146-.05l.03-.008c.043-.012.09-.022.14-.032l.016-.003.105-.018.07-.01.05-.006.12-.013.086-.007.082-.005.142-.006.054-.001.177-.002h.152l.104.003.086.003.1.005.066.004.11.008.04.004.156.015.017.002.128.016.072.01.094.015.085.016.02.004.092.022.088.023.068.02.1.034.045.018.077.035.06.03.018.011.067.04.03.02.036.028.016.015.023.02.033.035.01.014.018.026a.166.166 0 0 1 .021.06l-.001.025-.004.023-.009.028-.008.018-.017.03-.013.017-.027.028-.02.016-.025.017-.04.022-.02.01-.04.017-.028.01-.047.014-.022.006-.06.013-.022.004-.06.01-.013.002-.055.006-.01.001-.05.003h-.027l-.022.001-.035.001-.012-.001-.03-.002-.008-.001-.017-.003-.015-.003-.008-.003-.009-.004-.003-.003-.002-.003v-.005l.005-.007.015-.01.024-.01.017-.006.058-.016.01-.002.056-.01.008-.001.05-.006h.027l.04.002h.018l.028.003.007.001.018.003.012.003.005.003h.002l.002.002v.002l-.004.002-.013.003-.024.004-.009.001-.034.003h-.057l-.013-.001-.02-.003-.006-.002-.006-.002-.003-.003.001-.002.005-.001.013-.001.012-.001h.014l.009.001.005.002.002.002v.002h-.006l-.014-.001-.006-.001-.002-.001h-.001v-.001h.003l.007.001.003.001h-.001l-.001-.001h.002l.002.001h-.003l-.004-.002-.003-.002-.002-.002v-.002l.002-.001h.003l.003.001.002.002.001.002.001.001v.001h-.004l-.001-.001-.001-.002h.003l.001.001.001.002v.001h-.001l-.001-.001-.001-.002v-.001l.001.001.002.001v.001l-.001-.001-.001-.001v-.001h.002v.002l-.001-.001v-.002h.001v.002l-.001-.001v-.001h.001v.002l-.001-.001h.001l-.001-.001h.001l.001.001v.001l-.001-.001v-.001h.001v.001z"/></svg>
+                    <span>Telegram</span>
+                  </a>
+                </li>
+              )}
               {whatsapp && (
                 <li>
                   <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-gray-400 text-sm hover:text-white transition-colors">
@@ -69,19 +81,21 @@ export default function Footer({ companyName = 'ZHAOMING', whatsapp, wechat, loc
                     <span>WeChat: {wechat}</span>
                 </li>
               )}
-              <li className="text-gray-400 text-sm">
-                <span className="flex items-center space-x-2">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                  <span>info@zhaoming.com</span>
-                </span>
-              </li>
+              {email && (
+                <li className="text-gray-400 text-sm">
+                  <a href={`mailto:${email}`} className="flex items-center space-x-2 hover:text-white transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <span>{email}</span>
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} {companyName}. {t('rightsReserved')}</p>
-          <p className="mt-2 sm:mt-0">{t('footerTagline')}</p>
+          <p>{copyright || `\u00A9 ${new Date().getFullYear()} ${companyName}. ${t('rightsReserved')}`}</p>
+          <p className="mt-2 sm:mt-0">{tagline || t('footerTagline')}</p>
         </div>
       </div>
     </footer>

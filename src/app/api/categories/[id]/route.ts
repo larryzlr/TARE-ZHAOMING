@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await request.json();
-    const { slug, icon, sortOrder, translations } = body;
+    const { slug, icon, parentId, sortOrder, translations } = body;
 
     const existing = await prisma.category.findUnique({
       where: { id: params.id }
@@ -39,6 +39,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       data: {
         slug,
         icon,
+        parentId: parentId || null,
         sortOrder: Number(sortOrder),
       }
     });

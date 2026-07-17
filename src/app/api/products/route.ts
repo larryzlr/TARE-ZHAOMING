@@ -10,27 +10,41 @@ export async function GET(request: NextRequest) {
     const locale = searchParams.get('locale') || 'en';
     const category = searchParams.get('category') || undefined;
 
+    // 构建查询条件：支持通过主分类或标签表查询
     const where: any = {};
     if (status) where.status = status;
-    if (category) where.category = category;
+    if (category) {
+      where.OR = [
+        { category },
+        { categoryTags: { some: { categorySlug: category } } },
+      ];
+    }
 
     const products = await prisma.product.findMany({
       where,
       include: {
-        translations: true
+        translations: true,
+        categoryTags: true,
       },
       orderBy: { sortOrder: 'asc' }
     });
 
-    const result = products.map(product => {
+    const result = products.map((product: any) => {
       const translation = product.translations.find((t: any) => t.lang === locale) ||
                          product.translations.find((t: any) => t.lang === 'en') ||
                          product.translations[0];
+
+      // 合并主分类和标签分类，去重
+      const allCategorySlugs = Array.from(new Set([
+        product.category,
+        ...product.categoryTags.map((t: any) => t.categorySlug),
+      ].filter((s: string) => s && s !== 'uncategorized')));
 
       return {
         id: product.id,
         slug: product.slug,
         category: product.category,
+        categories: allCategorySlugs,
         images: product.images ? JSON.parse(product.images) : [],
         status: product.status,
         sortOrder: product.sortOrder,
@@ -58,16 +72,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { slug, category, images, status, sortOrder, translations } = body;
+    const { slug, category, categories, images, status, sortOrder, translations } = body;
 
     if (!slug || !translations || translations.length === 0) {
       return NextResponse.json({ error: 'slug and translations are required' }, { status: 400 });
     }
 
+    // 主分类取 categories 的第一个，或 category 字段，或 uncategorized
+    const primaryCategory = categories?.[0] || category || 'uncategorized';
+
     const product = await prisma.product.create({
       data: {
         slug,
-        category: category || 'uncategorized',
+        category: primaryCategory,
         images: images ? JSON.stringify(images) : null,
         status: status || 'draft',
         sortOrder: sortOrder || 0,
@@ -78,9 +95,15 @@ export async function POST(request: NextRequest) {
             description: t.description || null,
             specs: t.specs ? JSON.stringify(t.specs) : null
           }))
-        }
+        },
+        // 创建标签关联（排除主分类重复）
+        categoryTags: categories && Array.isArray(categories) && categories.length > 0 ? {
+          create: categories
+            .filter((c: string) => c && c !== 'uncategorized')
+            .map((categorySlug: string) => ({ categorySlug })),
+        } : undefined,
       },
-      include: { translations: true }
+      include: { translations: true, categoryTags: true }
     });
 
     return NextResponse.json({ product }, { status: 201 });

@@ -32,6 +32,7 @@ export default function NewProductPage() {
   const [form, setForm] = useState({
     slug: '',
     category: 'uncategorized',
+    categories: [] as string[],
     status: 'draft',
     images: [] as string[],
     translations: LANGUAGES.map(l => ({
@@ -51,6 +52,17 @@ export default function NewProductPage() {
       })
       .catch(() => setCategoriesLoading(false));
   }, []);
+
+  // 切换分类标签选择
+  const toggleCategory = (slug: string) => {
+    setForm(prev => {
+      const exists = prev.categories.includes(slug);
+      const next = exists
+        ? prev.categories.filter(c => c !== slug)
+        : [...prev.categories, slug];
+      return { ...prev, categories: next, category: next[0] || 'uncategorized' };
+    });
+  };
 
   const currentTranslation = form.translations.find(t => t.lang === activeLang)!;
 
@@ -132,7 +144,7 @@ export default function NewProductPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-gray-700">基本信息</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-600 mb-1">标识符 (URL)</label>
               <input
@@ -145,20 +157,6 @@ export default function NewProductPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">分类</label>
-              <select
-                value={form.category}
-                onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                disabled={categoriesLoading}
-              >
-                <option value="uncategorized">未分类</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.slug}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
               <label className="block text-sm text-gray-600 mb-1">状态</label>
               <select
                 value={form.status}
@@ -169,6 +167,43 @@ export default function NewProductPage() {
                 <option value="published">已发布</option>
               </select>
             </div>
+          </div>
+          {/* 分类标签 - 多选 */}
+          <div>
+            <label className="block text-sm text-gray-600 mb-2">
+              分类标签 <span className="text-gray-400 text-xs">（可多选，第一个为主分类。一个产品可同时属于多个分类，如盘式刹车片+陶瓷刹车片）</span>
+            </label>
+            {categoriesLoading ? (
+              <div className="text-sm text-gray-400">加载分类中...</div>
+            ) : categories.length === 0 ? (
+              <div className="text-sm text-gray-400">暂无分类，请先在分类管理中创建</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {categories.map(c => {
+                  const selected = form.categories.includes(c.slug);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleCategory(c.slug)}
+                      className={`px-3 py-1.5 rounded-full text-sm border transition ${
+                        selected
+                          ? 'bg-primary-500 text-white border-primary-500'
+                          : 'bg-white text-gray-600 border-gray-300 hover:border-primary-300 hover:text-primary-600'
+                      }`}
+                    >
+                      {selected && <span className="mr-1">✓</span>}
+                      {c.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {form.categories.length > 0 && (
+              <div className="mt-2 text-xs text-gray-500">
+                已选 {form.categories.length} 个 · 主分类: {form.categories[0]}
+              </div>
+            )}
           </div>
         </div>
 

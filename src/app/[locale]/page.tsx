@@ -165,20 +165,20 @@ export default async function HomePage({ params }: { params: { locale: string } 
               <div key={parent.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* 一级分类标题 */}
                 <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary-50 to-transparent border-b border-gray-100">
-                  <div className="bg-primary-100 w-10 h-10 md:w-11 md:h-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="bg-primary-100 w-12 h-12 md:w-14 md:h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                     {parent.icon ? (
                       parent.icon.startsWith('/') || parent.icon.startsWith('http') ? (
-                        <img src={parent.icon} alt={parent.name} className="w-10 h-10 md:w-11 md:h-11 object-cover" />
+                        <img src={parent.icon} alt={parent.name} className="w-12 h-12 md:w-14 md:h-14 object-cover" />
                       ) : (
-                        <svg className="w-5 h-5 md:w-6 md:h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <svg className="w-6 h-6 md:w-7 md:h-7 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d={parent.icon} />
                         </svg>
                       )
                     ) : (
-                      <span className="text-lg md:text-xl">📂</span>
+                      <span className="text-xl md:text-2xl">📂</span>
                     )}
                   </div>
-                  <h3 className="text-base md:text-lg font-bold text-gray-800">{parent.name}</h3>
+                  <h3 className="text-lg md:text-xl font-extrabold text-gray-800">{parent.name}</h3>
                 </div>
                 {/* 二级分类卡片 */}
                 {parent.children && parent.children.length > 0 ? (
@@ -189,20 +189,20 @@ export default async function HomePage({ params }: { params: { locale: string } 
                         href={`/${locale}/products?category=${child.slug}`}
                         className="flex flex-col items-center text-center p-2 rounded-lg hover:bg-primary-50 transition-all border border-transparent hover:border-primary-200 group"
                       >
-                        <div className="bg-primary-50 w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center mb-2 group-hover:bg-primary-100 transition-colors overflow-hidden">
+                        <div className="bg-primary-50 w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center mb-2 group-hover:bg-primary-100 transition-colors overflow-hidden">
                           {child.icon ? (
                             child.icon.startsWith('/') || child.icon.startsWith('http') ? (
-                              <img src={child.icon} alt={child.name} className="w-14 h-14 md:w-16 md:h-16 object-cover" />
+                              <img src={child.icon} alt={child.name} className="w-16 h-16 md:w-20 md:h-20 object-cover" />
                             ) : (
-                              <svg className="w-7 h-7 md:w-8 md:h-8 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                              <svg className="w-8 h-8 md:w-10 md:h-10 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d={child.icon} />
                               </svg>
                             )
                           ) : (
-                            <span className="text-2xl md:text-3xl">📦</span>
+                            <span className="text-3xl md:text-4xl">📦</span>
                           )}
                         </div>
-                        <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-primary-600 transition-colors line-clamp-2">
+                        <span className="text-sm md:text-base font-bold text-gray-700 group-hover:text-primary-600 transition-colors line-clamp-2">
                           {child.name}
                         </span>
                       </a>

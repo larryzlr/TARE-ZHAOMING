@@ -19,8 +19,24 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   translations ProductTranslation[]
+  categoryTags ProductCategoryTag[]
 
   @@map("products")
+}
+
+// 产品多分类标签关联表（多对多）
+// 一个产品可以绑定多个分类标签，例如同时属于"盘式刹车片"和"陶瓷刹车片"
+model ProductCategoryTag {
+  id          String   @id @default(cuid())
+  productId   String
+  categorySlug String
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categorySlug])
+  @@index([categorySlug])
+  @@map("product_category_tags")
 }
 
 model ProductTranslation {

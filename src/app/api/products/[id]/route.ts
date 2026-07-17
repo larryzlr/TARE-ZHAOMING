@@ -10,23 +10,30 @@ export async function GET(
   try {
     const product = await prisma.product.findUnique({
       where: { id: params.id },
-      include: { translations: true }
+      include: { translations: true, categoryTags: true }
     });
 
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
+    // 合并主分类和标签分类，去重
+    const allCategorySlugs = Array.from(new Set([
+      (product as any).category,
+      ...((product as any).categoryTags || []).map((t: any) => t.categorySlug),
+    ].filter((s: string) => s && s !== 'uncategorized')));
+
     const result = {
-      id: product.id,
-      slug: product.slug,
-      category: product.category,
-      images: product.images ? JSON.parse(product.images) : [],
-      status: product.status,
-      sortOrder: product.sortOrder,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-      translations: product.translations.map((t: any) => ({
+      id: (product as any).id,
+      slug: (product as any).slug,
+      category: (product as any).category,
+      categories: allCategorySlugs,
+      images: (product as any).images ? JSON.parse((product as any).images) : [],
+      status: (product as any).status,
+      sortOrder: (product as any).sortOrder,
+      createdAt: (product as any).createdAt,
+      updatedAt: (product as any).updatedAt,
+      translations: (product as any).translations.map((t: any) => ({
         lang: t.lang,
         title: t.title,
         description: t.description,
@@ -47,19 +54,40 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { slug, category, images, status, sortOrder, translations } = body;
+    const { slug, category, categories, images, status, sortOrder, translations } = body;
+
+    // 主分类取 categories 的第一个，或 category 字段
+    const primaryCategory = categories?.[0] || category;
 
     const product = await prisma.product.update({
       where: { id: params.id },
       data: {
         ...(slug && { slug }),
-        ...(category !== undefined && { category }),
+        ...(primaryCategory !== undefined && { category: primaryCategory }),
         ...(images !== undefined && { images: JSON.stringify(images) }),
         ...(status && { status }),
         ...(sortOrder !== undefined && { sortOrder }),
       },
-      include: { translations: true }
+      include: { translations: true, categoryTags: true }
     });
+
+    // 更新标签关联：先删除旧的，再创建新的
+    if (categories !== undefined && Array.isArray(categories)) {
+      await (prisma as any).productCategoryTag.deleteMany({
+        where: { productId: params.id },
+      });
+      const tagsToCreate = categories
+        .filter((c: string) => c && c !== 'uncategorized')
+        .map((categorySlug: string) => ({
+          productId: params.id,
+          categorySlug,
+        }));
+      if (tagsToCreate.length > 0) {
+        await (prisma as any).productCategoryTag.createMany({
+          data: tagsToCreate,
+        });
+      }
+    }
 
     if (translations && Array.isArray(translations)) {
       for (const t of translations) {
@@ -89,7 +117,7 @@ export async function PUT(
 
     const updated = await prisma.product.findUnique({
       where: { id: params.id },
-      include: { translations: true }
+      include: { translations: true, categoryTags: true }
     });
 
     return NextResponse.json({ product: updated });

@@ -14,6 +14,7 @@ model Product {
   slug        String   @unique
   category    String   @default("uncategorized")
   images      String?
+  detailImages String?  // 详情页图片（JSON数组，最多3张，上下排列展示）
   status      String   @default("draft")
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
@@ -46,6 +47,7 @@ model ProductTranslation {
   title      String
   description String?
   specs      String?
+  detailContent String?  // 详情页富文本内容（HTML格式，支持图片、格式化文本）
 
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 

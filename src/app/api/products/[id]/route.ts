@@ -29,6 +29,7 @@ export async function GET(
       category: (product as any).category,
       categories: allCategorySlugs,
       images: (product as any).images ? JSON.parse((product as any).images) : [],
+      detailImages: (product as any).detailImages ? JSON.parse((product as any).detailImages) : [],
       status: (product as any).status,
       sortOrder: (product as any).sortOrder,
       createdAt: (product as any).createdAt,
@@ -37,7 +38,8 @@ export async function GET(
         lang: t.lang,
         title: t.title,
         description: t.description,
-        specs: t.specs ? JSON.parse(t.specs) : []
+        specs: t.specs ? JSON.parse(t.specs) : [],
+        detailContent: t.detailContent || ''
       }))
     };
 
@@ -54,7 +56,12 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { slug, category, categories, images, status, sortOrder, translations } = body;
+    const { slug, category, categories, images, detailImages, status, sortOrder, translations } = body;
+
+    // 详情页图片最多3张
+    const safeDetailImages = Array.isArray(detailImages)
+      ? detailImages.filter((u: string) => typeof u === 'string' && u.trim()).slice(0, 3)
+      : null;
 
     // 主分类取 categories 的第一个，或 category 字段
     const primaryCategory = categories?.[0] || category;
@@ -65,6 +72,7 @@ export async function PUT(
         ...(slug && { slug }),
         ...(primaryCategory !== undefined && { category: primaryCategory }),
         ...(images !== undefined && { images: JSON.stringify(images) }),
+        ...(safeDetailImages !== null && { detailImages: safeDetailImages.length > 0 ? JSON.stringify(safeDetailImages) : null }),
         ...(status && { status }),
         ...(sortOrder !== undefined && { sortOrder }),
       },
@@ -99,6 +107,7 @@ export async function PUT(
               title: t.title || existing.title,
               description: t.description !== undefined ? t.description : existing.description,
               specs: t.specs !== undefined ? JSON.stringify(t.specs) : existing.specs,
+              detailContent: t.detailContent !== undefined ? (t.detailContent || null) : existing.detailContent,
             }
           });
         } else {
@@ -108,7 +117,8 @@ export async function PUT(
               lang: t.lang,
               title: t.title || '',
               description: t.description || null,
-              specs: t.specs ? JSON.stringify(t.specs) : null
+              specs: t.specs ? JSON.stringify(t.specs) : null,
+              detailContent: typeof t.detailContent === 'string' ? (t.detailContent || null) : null,
             }
           });
         }

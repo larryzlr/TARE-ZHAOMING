@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
         category: product.category,
         categories: allCategorySlugs,
         images: product.images ? JSON.parse(product.images) : [],
+        detailImages: product.detailImages ? JSON.parse(product.detailImages) : [],
         status: product.status,
         sortOrder: product.sortOrder,
         createdAt: product.createdAt,
@@ -53,11 +54,13 @@ export async function GET(request: NextRequest) {
         title: translation?.title || '',
         description: translation?.description || '',
         specs: translation?.specs ? JSON.parse(translation.specs) : [],
+        detailContent: translation?.detailContent || '',
         translations: product.translations.map((t: any) => ({
           lang: t.lang,
           title: t.title,
           description: t.description,
-          specs: t.specs ? JSON.parse(t.specs) : []
+          specs: t.specs ? JSON.parse(t.specs) : [],
+          detailContent: t.detailContent || '',
         }))
       };
     });
@@ -72,11 +75,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { slug, category, categories, images, status, sortOrder, translations } = body;
+    const { slug, category, categories, images, detailImages, status, sortOrder, translations } = body;
 
     if (!slug || !translations || translations.length === 0) {
       return NextResponse.json({ error: 'slug and translations are required' }, { status: 400 });
     }
+
+    // 详情页图片最多3张
+    const safeDetailImages = Array.isArray(detailImages)
+      ? detailImages.filter((u: string) => typeof u === 'string' && u.trim()).slice(0, 3)
+      : [];
 
     // 主分类取 categories 的第一个，或 category 字段，或 uncategorized
     const primaryCategory = categories?.[0] || category || 'uncategorized';
@@ -86,6 +94,7 @@ export async function POST(request: NextRequest) {
         slug,
         category: primaryCategory,
         images: images ? JSON.stringify(images) : null,
+        detailImages: safeDetailImages.length > 0 ? JSON.stringify(safeDetailImages) : null,
         status: status || 'draft',
         sortOrder: sortOrder || 0,
         translations: {
@@ -93,7 +102,8 @@ export async function POST(request: NextRequest) {
             lang: t.lang,
             title: t.title || '',
             description: t.description || null,
-            specs: t.specs ? JSON.stringify(t.specs) : null
+            specs: t.specs ? JSON.stringify(t.specs) : null,
+            detailContent: typeof t.detailContent === 'string' ? t.detailContent : null,
           }))
         },
         // 创建标签关联（排除主分类重复）

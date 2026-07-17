@@ -36,7 +36,7 @@ export async function getProductById(id: string, locale: string = 'en') {
       where: { id },
       include: {
         translations: {
-          where: { lang: locale }
+          where: { lang: { in: [locale, 'en', 'zh'] } }
         }
       }
     });
@@ -46,14 +46,18 @@ export async function getProductById(id: string, locale: string = 'en') {
     }
 
     const translation = product.translations.find((t: any) => t.lang === locale) ||
-                       product.translations.find((t: any) => t.lang === 'en');
+                       product.translations.find((t: any) => t.lang === 'en') ||
+                       product.translations.find((t: any) => t.lang === 'zh') ||
+                       product.translations[0];
 
     return {
       ...product,
       title: translation?.title || '',
       description: translation?.description || '',
       images: product.images ? JSON.parse(product.images) : [],
-      specs: translation?.specs ? JSON.parse(translation.specs) : []
+      detailImages: (product as any).detailImages ? JSON.parse((product as any).detailImages) : [],
+      specs: translation?.specs ? JSON.parse(translation.specs) : [],
+      detailContent: (translation as any)?.detailContent || ''
     };
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -67,7 +71,7 @@ export async function getProductBySlug(slug: string, locale: string = 'en') {
       where: { slug },
       include: {
         translations: {
-          where: { lang: locale }
+          where: { lang: { in: [locale, 'en', 'zh'] } }
         }
       }
     });
@@ -77,14 +81,18 @@ export async function getProductBySlug(slug: string, locale: string = 'en') {
     }
 
     const translation = product.translations.find((t: any) => t.lang === locale) ||
-                       product.translations.find((t: any) => t.lang === 'en');
+                       product.translations.find((t: any) => t.lang === 'en') ||
+                       product.translations.find((t: any) => t.lang === 'zh') ||
+                       product.translations[0];
 
     return {
       ...product,
       title: translation?.title || '',
       description: translation?.description || '',
       images: product.images ? JSON.parse(product.images) : [],
-      specs: translation?.specs ? JSON.parse(translation.specs) : []
+      detailImages: (product as any).detailImages ? JSON.parse((product as any).detailImages) : [],
+      specs: translation?.specs ? JSON.parse(translation.specs) : [],
+      detailContent: (translation as any)?.detailContent || ''
     };
   } catch (error) {
     console.error('Error fetching product:', error);

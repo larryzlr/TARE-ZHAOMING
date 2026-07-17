@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
+import ProductDetailImages from '@/components/ProductDetailImages';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -162,6 +163,25 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
             </div>
           </div>
         </div>
+
+        {/* 详情页图片 - 上下排列布局，参考淘宝/拼多多详情页 */}
+        {product.detailImages && product.detailImages.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('detailImages')}</h2>
+            <ProductDetailImages images={product.detailImages} title={product.title} />
+          </div>
+        )}
+
+        {/* 详情页富文本内容 */}
+        {product.detailContent && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('detailContent')}</h2>
+            <div
+              className="product-detail-content"
+              dangerouslySetInnerHTML={{ __html: product.detailContent }}
+            />
+          </div>
+        )}
 
         {relatedProducts.length > 0 && (
           <div className="mt-20">

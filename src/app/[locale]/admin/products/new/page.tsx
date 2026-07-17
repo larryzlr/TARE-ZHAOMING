@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ImageUploader from '@/components/ImageUploader';
+import RichTextEditor from '@/components/RichTextEditor';
 import { useToast } from '@/components/Toast';
 
 const LANGUAGES = [
@@ -12,6 +13,9 @@ const LANGUAGES = [
   { code: 'fr', label: 'Français' },
   { code: 'es', label: 'Español' },
 ];
+
+const MAX_DETAIL_IMAGES = 3;
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024; // 8MB
 
 type CategoryOption = {
   id: string;
@@ -29,17 +33,21 @@ export default function NewProductPage() {
   const [activeLang, setActiveLang] = useState('zh');
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [detailUploading, setDetailUploading] = useState(false);
+  const detailInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     slug: '',
     category: 'uncategorized',
     categories: [] as string[],
     status: 'draft',
     images: [] as string[],
+    detailImages: [] as string[],
     translations: LANGUAGES.map(l => ({
       lang: l.code,
       title: '',
       description: '',
       specs: [] as { label: string; value: string }[],
+      detailContent: '',
     })),
   });
 
@@ -112,6 +120,55 @@ export default function NewProductPage() {
 
   const removeImage = (index: number) => {
     setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
+  };
+
+  // 详情页图片上传（最多3张，单张≤8MB）
+  const handleDetailImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setDetailUploading(true);
+    try {
+      const remaining = MAX_DETAIL_IMAGES - form.detailImages.length;
+      const toUpload = files.slice(0, remaining);
+
+      for (const file of toUpload) {
+        if (file.size > MAX_IMAGE_SIZE) {
+          toast('error', `${file.name} 超过 8MB 限制`);
+          continue;
+        }
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          setForm(prev => ({
+            ...prev,
+            detailImages: [...prev.detailImages, data.url].slice(0, MAX_DETAIL_IMAGES),
+          }));
+        } else {
+          toast('error', data.error || `${file.name} 上传失败`);
+        }
+      }
+    } catch {
+      toast('error', '上传失败，请重试');
+    } finally {
+      setDetailUploading(false);
+      if (detailInputRef.current) detailInputRef.current.value = '';
+    }
+  };
+
+  const removeDetailImage = (index: number) => {
+    setForm(prev => ({ ...prev, detailImages: prev.detailImages.filter((_, i) => i !== index) }));
+  };
+
+  const updateDetailContent = (value: string) => {
+    setForm(prev => ({
+      ...prev,
+      translations: prev.translations.map(t =>
+        t.lang === activeLang ? { ...t, detailContent: value } : t
+      ),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -251,6 +308,61 @@ export default function NewProductPage() {
           )}
         </div>
 
+        {/* 详情页图片 - 最多3张，每张8MB以内，上下排列展示 */}
+        <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-gray-700">详情页图片</h2>
+            <span className="text-xs text-gray-500">
+              {form.detailImages.length}/{MAX_DETAIL_IMAGES} 张 · 单张最大 8MB · 详情页将以上下排列展示
+            </span>
+          </div>
+          <input
+            ref={detailInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            onChange={handleDetailImageUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => detailInputRef.current?.click()}
+            disabled={form.detailImages.length >= MAX_DETAIL_IMAGES || detailUploading}
+            className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors cursor-pointer bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {detailUploading ? (
+              <span className="text-gray-500">上传中...</span>
+            ) : form.detailImages.length >= MAX_DETAIL_IMAGES ? (
+              <span className="text-gray-400">已达到最大数量（3张），请先删除再上传</span>
+            ) : (
+              <span className="text-primary-600 font-medium">点击上传详情页图片（可多选）</span>
+            )}
+          </button>
+          {form.detailImages.length > 0 && (
+            <div className="space-y-3">
+              {form.detailImages.map((img, i) => (
+                <div key={i} className="relative group">
+                  <img
+                    src={img}
+                    alt={`详情图 ${i + 1}`}
+                    className="w-full max-h-[400px] object-contain rounded-lg border border-gray-200 bg-gray-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeDetailImage(i)}
+                    className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                  >
+                    ✕
+                  </button>
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-xs rounded">
+                    {i + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-gray-700">多语言内容</h2>
           <div className="flex gap-1 border-b border-gray-200">
@@ -328,6 +440,19 @@ export default function NewProductPage() {
                 + 添加参数
               </button>
             </div>
+          </div>
+
+          {/* 富文本详情内容 - 按当前语言编辑 */}
+          <div>
+            <label className="block text-sm text-gray-600 mb-2">
+              详情页富文本内容 <span className="text-gray-400 text-xs">（当前语言：{LANGUAGES.find(l => l.code === activeLang)?.label}，支持插入图片、字体格式等）</span>
+            </label>
+            <RichTextEditor
+              key={activeLang}
+              value={currentTranslation.detailContent}
+              onChange={updateDetailContent}
+              placeholder="在此输入产品详情内容，支持插入图片、调整字体大小/样式..."
+            />
           </div>
         </div>
 

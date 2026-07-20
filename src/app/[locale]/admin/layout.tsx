@@ -49,6 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: `/${locale}/admin/products`, label: '产品管理' },
     { href: `/${locale}/admin/categories`, label: '分类管理' },
     { href: `/${locale}/admin/oe-numbers`, label: 'OE号管理' },
+    { href: `/${locale}/admin/images`, label: '图片管理' },
     { href: `/${locale}/admin/inquiries`, label: '询盘管理' },
     { href: `/${locale}/admin/translations`, label: '文案管理' },
     { href: `/${locale}/admin/settings`, label: '站点设置' },

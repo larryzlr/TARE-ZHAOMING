@@ -21,6 +21,7 @@ type CategoryOption = {
   id: string;
   slug: string;
   name: string;
+  children?: CategoryOption[];
 };
 
 export default function NewProductPage() {
@@ -225,33 +226,59 @@ export default function NewProductPage() {
               </select>
             </div>
           </div>
-          {/* 分类标签 - 多选 */}
+          {/* 分类标签 - 多选（支持父级+子级） */}
           <div>
             <label className="block text-sm text-gray-600 mb-2">
-              分类标签 <span className="text-gray-400 text-xs">（可多选，第一个为主分类。一个产品可同时属于多个分类，如盘式刹车片+陶瓷刹车片）</span>
+              分类标签 <span className="text-gray-400 text-xs">（可多选，第一个为主分类。支持选择一级和二级分类）</span>
             </label>
             {categoriesLoading ? (
               <div className="text-sm text-gray-400">加载分类中...</div>
             ) : categories.length === 0 ? (
               <div className="text-sm text-gray-400">暂无分类，请先在分类管理中创建</div>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {categories.map(c => {
-                  const selected = form.categories.includes(c.slug);
+              <div className="space-y-3 max-h-72 overflow-y-auto p-1">
+                {categories.map(parent => {
+                  const parentSelected = form.categories.includes(parent.slug);
+                  const hasChildren = parent.children && parent.children.length > 0;
                   return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => toggleCategory(c.slug)}
-                      className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                        selected
-                          ? 'bg-primary-500 text-white border-primary-500'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-primary-300 hover:text-primary-600'
-                      }`}
-                    >
-                      {selected && <span className="mr-1">✓</span>}
-                      {c.name}
-                    </button>
+                    <div key={parent.id} className="border border-gray-100 rounded-lg p-3 bg-gray-50/50">
+                      {/* 一级分类 - 可选 */}
+                      <button
+                        type="button"
+                        onClick={() => toggleCategory(parent.slug)}
+                        className={`px-3 py-1.5 rounded-full text-sm border transition font-medium ${
+                          parentSelected
+                            ? 'bg-primary-500 text-white border-primary-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-primary-300 hover:text-primary-600'
+                        }`}
+                      >
+                        {parentSelected && <span className="mr-1">✓</span>}
+                        {parent.name}
+                      </button>
+                      {/* 二级分类 - 缩进展示，可选 */}
+                      {hasChildren && (
+                        <div className="flex flex-wrap gap-2 mt-2 ml-4 pl-3 border-l-2 border-gray-200">
+                          {parent.children!.map(child => {
+                            const childSelected = form.categories.includes(child.slug);
+                            return (
+                              <button
+                                key={child.id}
+                                type="button"
+                                onClick={() => toggleCategory(child.slug)}
+                                className={`px-3 py-1.5 rounded-full text-sm border transition ${
+                                  childSelected
+                                    ? 'bg-primary-500 text-white border-primary-500'
+                                    : 'bg-white text-gray-600 border-gray-300 hover:border-primary-300 hover:text-primary-600'
+                                }`}
+                              >
+                                {childSelected && <span className="mr-1">✓</span>}
+                                {child.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>

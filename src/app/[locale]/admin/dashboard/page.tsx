@@ -1,5 +1,5 @@
 import { getAllProducts } from '@/lib/product-service';
-import ImageUploader from '@/components/ImageUploader';
+import DashboardImageUploader from '@/components/DashboardImageUploader';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,9 +60,9 @@ export default async function DashboardPage({ params: { locale } }: DashboardPag
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">图片上传</h2>
-        <p className="text-sm text-gray-500 mb-4">上传后将自动生成可使用的 URL 链接</p>
-        <ImageUploader buttonText="上传图片" />
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">图片上传</h2>
+        <p className="text-sm text-gray-500 mb-4">支持多选上传，或通过URL批量添加，上传后自动生成可复制的URL链接</p>
+        <DashboardImageUploader />
       </div>
     </div>
   );

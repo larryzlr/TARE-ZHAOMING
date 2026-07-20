@@ -1,16 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
-// GET: 获取所有OE号列表（后台管理用）
-export async function GET() {
+// GET: 获取OE号列表（支持服务端分页+搜索）
+export async function GET(request: NextRequest) {
   try {
-    const oeNumbers = await prisma.oeNumber.findMany({
-      orderBy: { sortOrder: 'asc' }
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
+    const search = searchParams.get('search')?.trim() || '';
+
+    const where: Prisma.OeNumberWhereInput = search ? {
+      OR: [
+        { oeNumber: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { brand: { contains: search, mode: Prisma.QueryMode.insensitive } },
+        { model: { contains: search, mode: Prisma.QueryMode.insensitive } },
+      ]
+    } : {};
+
+    const [oeNumbers, total] = await Promise.all([
+      prisma.oeNumber.findMany({
+        where,
+        orderBy: { sortOrder: 'asc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.oeNumber.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      oeNumbers,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
     });
-    return NextResponse.json({ oeNumbers });
   } catch (error: any) {
     return NextResponse.json({ error: '获取OE号列表失败' }, { status: 500 });
   }

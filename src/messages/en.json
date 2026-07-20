@@ -53,7 +53,12 @@
     "inquirySuccess": "Inquiry submitted successfully! We will contact you soon.",
     "inquiryFailed": "Submission failed, please try again later or contact us directly.",
     "inquiryRequiredTip": "Fields marked with * are required. Your privacy is strictly protected.",
-    "noProducts": "No products available yet."
+    "noProducts": "No products available yet.",
+    "inquirySuccessTitle": "Submission Successful",
+    "inquirySuccessDesc": "Thank you for your inquiry! We will contact you within 24 hours.",
+    "inquirySuccessContinue": "Continue Browsing",
+    "inquirySuccessTip": "Your privacy is strictly protected",
+    "backToHome": "Back to Home"
   },
   "ProductPage": {
     "backToProducts": "Back to Products",

@@ -53,7 +53,12 @@
     "inquirySuccess": "¡Consulta enviada con éxito! Nos pondremos en contacto pronto.",
     "inquiryFailed": "Error al enviar, intente más tarde o contáctenos directamente.",
     "inquiryRequiredTip": "Los campos marcados con * son obligatorios. Su privacidad está estrictamente protegida.",
-    "noProducts": "Aún no hay productos disponibles"
+    "noProducts": "Aún no hay productos disponibles",
+    "inquirySuccessTitle": "Envío exitoso",
+    "inquirySuccessDesc": "¡Gracias por su consulta! Nos pondremos en contacto en 24 horas.",
+    "inquirySuccessContinue": "Continuar navegando",
+    "inquirySuccessTip": "Su privacidad está estrictamente protegida",
+    "backToHome": "Volver al inicio"
   },
   "ProductPage": {
     "backToProducts": "Volver a productos",

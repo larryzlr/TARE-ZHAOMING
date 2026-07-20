@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import InquirySuccessModal from './InquirySuccessModal';
 
 type Props = {
   locale: string;
@@ -22,6 +23,7 @@ export default function InquiryForm({ locale, whatsappLink, telegramLink }: Prop
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const validate = () => {
     const next: { name?: string; email?: string } = {};
@@ -57,7 +59,8 @@ export default function InquiryForm({ locale, whatsappLink, telegramLink }: Prop
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setResult({ type: 'success', msg: t('inquirySuccess') });
+        // 显示成功弹窗（同时会改变 URL 用于追踪）
+        setShowSuccessModal(true);
         setForm({ name: '', email: '', phone: '', whatsapp: '', product: '', message: '' });
       } else {
         setResult({ type: 'error', msg: data.error || t('inquiryFailed') });
@@ -201,6 +204,13 @@ export default function InquiryForm({ locale, whatsappLink, telegramLink }: Prop
         )}
       </div>
       <p className="text-xs text-gray-400 text-center">{t('inquiryRequiredTip')}</p>
+
+      {/* 成功弹窗 */}
+      <InquirySuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        locale={locale}
+      />
     </form>
   );
 }

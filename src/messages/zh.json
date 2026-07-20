@@ -53,7 +53,12 @@
     "inquirySuccess": "询盘提交成功！我们将尽快与您联系。",
     "inquiryFailed": "提交失败，请稍后重试或直接联系我们。",
     "inquiryRequiredTip": "带 * 号为必填项，我们会严格保护您的隐私信息。",
-    "noProducts": "暂无产品"
+    "noProducts": "暂无产品",
+    "inquirySuccessTitle": "提交成功",
+    "inquirySuccessDesc": "感谢您的询盘！我们将在24小时内与您联系。",
+    "inquirySuccessContinue": "继续浏览",
+    "inquirySuccessTip": "我们会严格保护您的隐私信息",
+    "backToHome": "返回首页"
   },
   "ProductPage": {
     "backToProducts": "返回产品列表",

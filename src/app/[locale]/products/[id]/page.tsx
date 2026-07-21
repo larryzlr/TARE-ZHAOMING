@@ -10,14 +10,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
+import { getSiteUrl } from '@/lib/site-url';
 
 // ISR：每 60 分钟重新生成一次
 export const revalidate = 3600;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
-
 export async function generateMetadata({ params }: { params: { locale: string; id: string } }) {
   const { locale, id } = params;
+  const SITE_URL = await getSiteUrl();
   let title = 'Product - RUISHA Brake';
   let description = 'Professional brake pad manufacturer providing high-quality OEM brake pads with E-Mark certification.';
 
@@ -68,6 +68,7 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
   const t = await getTranslations('ProductPage');
   const ct = await getTranslations('Common');
   const { locale, id } = params;
+  const SITE_URL = await getSiteUrl();
 
   let product: any = null;
   let siteConfig: Record<string, string> = {};

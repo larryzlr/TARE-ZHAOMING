@@ -1,9 +1,13 @@
 // src/app/robots.ts
 // 搜索引擎爬虫指令配置
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+import { getSiteUrl } from '@/lib/site-url';
 
-export default function robots() {
+export const dynamic = 'force-dynamic';
+
+export default async function robots() {
+  const SITE_URL = await getSiteUrl();
+
   return {
     rules: [
       {

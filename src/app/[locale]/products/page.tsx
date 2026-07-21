@@ -6,11 +6,10 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import { routing } from '@/lib/i18n/routing';
+import { getSiteUrl } from '@/lib/site-url';
 
 // ISR：每小时重新生成
 export const revalidate = 3600;
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
 
 const PRODUCTS_TITLE_MAP: Record<string, string> = {
   en: 'Brake Pad Products - OEM & E-Mark Certified | RUISHA Brake',
@@ -30,6 +29,7 @@ const PRODUCTS_DESC_MAP: Record<string, string> = {
 
 export async function generateMetadata({ params }: { params: { locale: string } }) {
   const { locale } = params;
+  const SITE_URL = await getSiteUrl();
   let title = PRODUCTS_TITLE_MAP[locale] || PRODUCTS_TITLE_MAP['en'];
   let description = PRODUCTS_DESC_MAP[locale] || PRODUCTS_DESC_MAP['en'];
 

@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { routing } from '@/lib/i18n/routing';
 import { getSiteConfig } from '@/lib/product-service';
+import { getSiteUrl } from '@/lib/site-url';
 import { Inter } from 'next/font/google';
 import '@/app/globals.css';
 
@@ -55,10 +56,11 @@ const OG_LOCALE_MAP: Record<string, string> = {
   es: 'es_ES',
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.z-ming.com';
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = params;
+  const siteUrl = await getSiteUrl();
   let title = TITLE_MAP[locale] || TITLE_MAP['en'];
   let description = DESC_MAP[locale] || DESC_MAP['en'];
   const keywords = KEYWORDS_MAP[locale] || KEYWORDS_MAP['en'];
@@ -87,25 +89,25 @@ export async function generateMetadata({ params }: Props) {
   // 构建 hreflang 多语言 alternate 链接
   const languages: Record<string, string> = {};
   routing.locales.forEach((loc) => {
-    languages[loc] = `${SITE_URL}/${loc}`;
+    languages[loc] = `${siteUrl}/${loc}`;
   });
   // 添加 x-default 指向英文版本
-  languages['x-default'] = `${SITE_URL}/en`;
+  languages['x-default'] = `${siteUrl}/en`;
 
   return {
     title,
     description,
     keywords,
-    metadataBase: new URL(SITE_URL),
+    metadataBase: new URL(siteUrl),
     alternates: {
-      canonical: `${SITE_URL}/${locale}`,
+      canonical: `${siteUrl}/${locale}`,
       languages,
     },
     openGraph: {
       title,
       description,
       locale: OG_LOCALE_MAP[locale] || 'en_US',
-      url: `${SITE_URL}/${locale}`,
+      url: `${siteUrl}/${locale}`,
       siteName: 'RUISHA Brake',
       type: 'website',
       images: [

@@ -2,12 +2,12 @@
 
 import { getAllProducts } from '@/lib/product-service';
 import { routing } from '@/lib/i18n/routing';
+import { getSiteUrl } from '@/lib/site-url';
 
 export const dynamic = 'force-dynamic';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
-
 export default async function sitemap() {
+  const SITE_URL = await getSiteUrl();
   const lastModified = new Date();
 
   let productUrls: Array<{

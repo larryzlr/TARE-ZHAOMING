@@ -8,6 +8,7 @@ import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import InquiryForm from '@/components/InquiryForm';
 import OeNumberQuery from '@/components/OeNumberQuery';
 import SectionBackground from '@/components/SectionBackground';
+import { getSiteUrl } from '@/lib/site-url';
 
 // ISR：每小时重新生成（产品更新后会在 1 小时内自动反映）
 export const revalidate = 3600;
@@ -64,7 +65,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
   const hasHeroBg = heroImages.length > 0;
 
   // JSON-LD 结构化数据：Organization + WebSite
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const SITE_URL = await getSiteUrl();
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',

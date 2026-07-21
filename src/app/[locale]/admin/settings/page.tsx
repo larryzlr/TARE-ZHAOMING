@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useToast } from '@/components/Toast';
 
-type FieldType = 'text' | 'textarea' | 'image' | 'multi-image' | 'opacity';
+type FieldType = 'text' | 'textarea' | 'image' | 'multi-image' | 'opacity' | 'faq-editor';
 type Field = {
   key: string;
   label: string;
@@ -80,6 +80,25 @@ const CONFIG_SECTIONS: { key: string; title: string; fields: Field[] }[] = [
       { key: 'bg_about', label: '关于我们区域背景', type: 'multi-image', placeholder: '留空则使用默认白色背景' },
       { key: 'bg_about_opacity', label: '关于我们遮罩透明度', type: 'opacity', placeholder: '80', overlayColor: 'white' },
     ]
+  },
+  {
+    key: 'faq_page',
+    title: 'FAQ 常见问题页面',
+    fields: [
+      { key: 'faq_title', label: '页面标题', type: 'text', placeholder: '常见问题解答 / FAQ' },
+      { key: 'faq_intro', label: '页面简介', type: 'textarea', placeholder: '页面标题下方显示的介绍文字' },
+      { key: 'faq_items', label: '问答列表', type: 'faq-editor', placeholder: '点击下方按钮添加问答' },
+    ]
+  },
+  {
+    key: 'about_page',
+    title: 'About Us 关于我们页面',
+    fields: [
+      { key: 'about_subtitle', label: '副标题', type: 'text', placeholder: '如：Trusted Brake Pad Manufacturer Since 2004' },
+      { key: 'about_title', label: '页面标题', type: 'text', placeholder: '如：关于我们 / About Us' },
+      { key: 'about_content', label: '页面内容（段落间用空行分隔）', type: 'textarea', placeholder: '输入公司介绍内容，200-300字含关键词（OEM brake pads, E-Mark certified 等）。段落之间留空行。' },
+      { key: 'about_images', label: '工厂/团队照片（最多4张）', type: 'multi-image', placeholder: '上传工厂、生产线、团队等照片' },
+    ]
   }
 ];
 
@@ -149,11 +168,27 @@ export default function AdminSettingsPage() {
     return images[0] || '';
   };
 
+  // 字段 key → 语义化文件名映射（用于图片上传时自动生成 SEO 友好的文件名）
+  const FIELD_NAME_MAP: Record<string, string> = {
+    logo: 'company-logo',
+    wechat_qr: 'wechat-qr-code',
+    hero_bg_image: 'hero-banner',
+    bg_advantages: 'advantages-section-bg',
+    bg_categories: 'categories-section-bg',
+    bg_products: 'products-section-bg',
+    bg_factory: 'factory-section-bg',
+    bg_about: 'about-section-bg',
+    about_images: 'factory-photo',
+  };
+  const getSemanticName = (key: string): string => FIELD_NAME_MAP[key] || key.replace(/_/g, '-');
+
   const handleUpload = async (key: string, file: File, isMulti: boolean = false) => {
     setUploadingKey(key);
     try {
       const formData = new FormData();
       formData.append('file', file);
+      // 传入语义化名称，后端会生成如 company-logo-a1b2c3.jpg 的文件名
+      formData.append('customName', getSemanticName(key));
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -379,6 +414,11 @@ export default function AdminSettingsPage() {
                       onChange={v => updateField(field.key, v)}
                       associatedImage={getAssociatedImage(field.key)}
                     />
+                  ) : field.type === 'faq-editor' ? (
+                    <FaqEditor
+                      value={currentConfig[field.key] || ''}
+                      onChange={v => updateField(field.key, v)}
+                    />
                   ) : (
                     <input
                       type="text"
@@ -500,8 +540,7 @@ function OpacityControl({
             <span className="text-xs text-gray-400">暂无背景图，使用渐变预览</span>
           </div>
         )}
-        <div
-          className="absolute inset-0 flex items-center justify-center"
+        <div className="absolute inset-0 flex items-center justify-center"
           style={{ backgroundColor: overlayRgba }}
         >
           <span className={`text-sm font-medium ${overlayColor === 'black' ? 'text-white' : 'text-gray-800'}`}>
@@ -509,6 +548,122 @@ function OpacityControl({
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * FAQ 编辑器：动态添加/删除问答对，数据以 JSON 存储
+ */
+function FaqEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  let items: { q: string; a: string }[] = [];
+  try {
+    if (value) {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) items = parsed;
+    }
+  } catch {
+    // 解析失败，使用空数组
+  }
+
+  const update = (newItems: { q: string; a: string }[]) => {
+    onChange(newItems.length > 0 ? JSON.stringify(newItems) : '');
+  };
+
+  const addItem = () => {
+    update([...items, { q: '', a: '' }]);
+  };
+
+  const removeItem = (idx: number) => {
+    update(items.filter((_, i) => i !== idx));
+  };
+
+  const updateItem = (idx: number, field: 'q' | 'a', val: string) => {
+    update(items.map((item, i) => (i === idx ? { ...item, [field]: val } : item)));
+  };
+
+  const moveItem = (idx: number, dir: 'up' | 'down') => {
+    const newIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= items.length) return;
+    const newItems = [...items];
+    [newItems[idx], newItems[newIdx]] = [newItems[newIdx], newItems[idx]];
+    update(newItems);
+  };
+
+  return (
+    <div className="space-y-3">
+      {items.length === 0 && (
+        <div className="text-sm text-gray-400 py-4 text-center border-2 border-dashed border-gray-200 rounded-lg">
+          暂无问答，点击下方按钮添加。留空则使用系统默认 FAQ 内容。
+        </div>
+      )}
+      {items.map((item, idx) => (
+        <div key={idx} className="border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50/50">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-500">问答 #{idx + 1}</span>
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => moveItem(idx, 'up')}
+                disabled={idx === 0}
+                className="w-6 h-6 text-gray-400 hover:text-primary-600 disabled:opacity-30 text-xs border border-gray-200 rounded"
+                title="上移"
+              >↑</button>
+              <button
+                type="button"
+                onClick={() => moveItem(idx, 'down')}
+                disabled={idx === items.length - 1}
+                className="w-6 h-6 text-gray-400 hover:text-primary-600 disabled:opacity-30 text-xs border border-gray-200 rounded"
+                title="下移"
+              >↓</button>
+              <button
+                type="button"
+                onClick={() => removeItem(idx)}
+                className="w-6 h-6 text-red-400 hover:text-red-600 text-xs border border-red-200 rounded"
+                title="删除"
+              >✕</button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">问题 (Q)</label>
+            <input
+              type="text"
+              value={item.q}
+              onChange={e => updateItem(idx, 'q', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="输入问题"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">答案 (A)</label>
+            <textarea
+              value={item.a}
+              onChange={e => updateItem(idx, 'a', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              rows={3}
+              placeholder="输入答案"
+            />
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addItem}
+        className="w-full py-2.5 border-2 border-dashed border-primary-300 text-primary-600 rounded-lg text-sm hover:bg-primary-50 transition-colors"
+      >
+        + 添加问答
+      </button>
+      {items.length > 0 && (
+        <p className="text-xs text-gray-400">
+          共 {items.length} 条问答。保存后前台 FAQ 页面将显示这些内容（替代默认内容）。
+        </p>
+      )}
     </div>
   );
 }

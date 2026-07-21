@@ -3,7 +3,12 @@
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/components/Toast';
 
-export default function DashboardImageUploader() {
+interface DashboardImageUploaderProps {
+  /** 语义化文件名前缀，用于生成 SEO 友好的文件名（如 "brake-pad-product"） */
+  customName?: string;
+}
+
+export default function DashboardImageUploader({ customName = 'brake-pad-image' }: DashboardImageUploaderProps = {}) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -47,6 +52,8 @@ export default function DashboardImageUploader() {
       try {
         const formData = new FormData();
         formData.append('file', validFiles[i]);
+        // 语义化文件名，生成如 brake-pad-image-a1b2c3.jpg
+        formData.append('customName', customName);
         const res = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await res.json();
         if (res.ok && data.url) {
@@ -67,7 +74,7 @@ export default function DashboardImageUploader() {
 
     setUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, [toast]);
+  }, [toast, customName]);
 
   const handleCopy = useCallback(async (url: string, idx: number) => {
     try {

@@ -140,6 +140,8 @@ export default function NewProductPage() {
         }
         const formData = new FormData();
         formData.append('file', file);
+        // 语义化文件名，生成如 brake-pad-detail-a1b2c3.jpg
+        formData.append('customName', 'brake-pad-detail');
         const res = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await res.json();
         if (res.ok && data.url) {

@@ -6,9 +6,11 @@ interface ImageUploaderProps {
   onUpload?: (url: string) => void;
   buttonText?: string;
   showPreview?: boolean;
+  /** 语义化文件名前缀，用于生成 SEO 友好的文件名（如 "brake-pad-product"） */
+  customName?: string;
 }
 
-export default function ImageUploader({ onUpload, buttonText = '上传图片', showPreview = true }: ImageUploaderProps) {
+export default function ImageUploader({ onUpload, buttonText = '上传图片', showPreview = true, customName = 'brake-pad-image' }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState('');
   const [copied, setCopied] = useState(false);
@@ -26,6 +28,8 @@ export default function ImageUploader({ onUpload, buttonText = '上传图片', s
     try {
       const formData = new FormData();
       formData.append('file', file);
+      // 语义化文件名，生成如 brake-pad-image-a1b2c3.jpg
+      formData.append('customName', customName);
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -48,7 +52,7 @@ export default function ImageUploader({ onUpload, buttonText = '上传图片', s
         inputRef.current.value = '';
       }
     }
-  }, [onUpload]);
+  }, [onUpload, customName]);
 
   const handleCopy = useCallback(async () => {
     if (!uploadedUrl) return;

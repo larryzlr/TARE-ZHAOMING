@@ -8,10 +8,46 @@ export const dynamic = 'force-dynamic';
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 const MAX_SIZE = 8 * 1024 * 1024; // 8MB
 
+/**
+ * 将任意字符串转换为 SEO 友好的 slug（小写、连字符、仅保留拉丁字母数字）
+ * 非拉丁字符（如中文）会被移除，结果为空时返回 null
+ */
+function slugify(input: string): string | null {
+  const slug = input
+    .toLowerCase()
+    .trim()
+    // 去除文件扩展名
+    .replace(/\.[a-z0-9]+$/i, '')
+    // 连续非字母数字字符（含中文、空格、下划线）替换为连字符
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return slug || null;
+}
+
+/**
+ * 生成语义化文件名
+ * 优先级：
+ * 1. 显式传入的 customName（slugify）
+ * 2. 原始文件名含拉丁字母（slugify，如 oem-brake-pads-factory.jpg → oem-brake-pads-factory）
+ * 3. 回退到 image
+ * 末尾追加 6 位短随机串保证唯一，避免覆盖
+ */
+function buildSemanticFileName(rawName: string | null, originalFileName: string, ext: string): string {
+  const base =
+    (rawName ? slugify(rawName) : null) ||
+    slugify(originalFileName) ||
+    'image';
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${base}-${suffix}.${ext}`;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    // 可选：前端传入的语义化名称（如 "oem-brake-pads-factory"）
+    const customName = (formData.get('customName') as string | null) || '';
 
     if (!file) {
       return NextResponse.json({ error: '请选择要上传的文件' }, { status: 400 });
@@ -26,7 +62,8 @@ export async function POST(request: NextRequest) {
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    // 生成语义化文件名（取代旧的 Date.now()-random 格式）
+    const fileName = buildSemanticFileName(customName || null, file.name, ext);
 
     const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN;
 

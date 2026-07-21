@@ -50,8 +50,9 @@ export default function Footer({ companyName = 'ZHAOMING', whatsapp, telegram, w
           <div>
             <h3 className="text-base font-semibold mb-4">{t('about')}</h3>
             <ul className="space-y-2">
-              <li><Link href={`/${locale}#about`} className="text-gray-400 text-sm hover:text-white transition-colors">{t('aboutUs')}</Link></li>
+              <li><Link href={`/${locale}/about`} className="text-gray-400 text-sm hover:text-white transition-colors">{t('aboutUs')}</Link></li>
               <li><Link href={`/${locale}#factory`} className="text-gray-400 text-sm hover:text-white transition-colors">{t('factoryTour')}</Link></li>
+              <li><Link href={`/${locale}/faq`} className="text-gray-400 text-sm hover:text-white transition-colors">FAQ</Link></li>
               <li><Link href={`/${locale}#contact`} className="text-gray-400 text-sm hover:text-white transition-colors">{t('contact')}</Link></li>
             </ul>
           </div>

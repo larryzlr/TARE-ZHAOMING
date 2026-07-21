@@ -108,22 +108,13 @@ export async function generateMetadata({ params }: Props) {
       description,
       locale: OG_LOCALE_MAP[locale] || 'en_US',
       url: `${siteUrl}/${locale}`,
-      siteName: 'RUISHA Brake',
+      siteName: 'Z-MING Brake',
       type: 'website',
-      images: [
-        {
-          url: '/og-image.jpg',
-          width: 1200,
-          height: 630,
-          alt: 'RUISHA Brake - Professional Brake Pad Manufacturer',
-        },
-      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: ['/og-image.jpg'],
     },
     robots: {
       index: true,

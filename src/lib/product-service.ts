@@ -32,7 +32,8 @@ export async function getAllProducts(locale: string = 'en', status: string = 'pu
 
 export async function getProductById(id: string, locale: string = 'en') {
   try {
-    const product = await prisma.product.findUnique({
+    // 先尝试按 ID 查找
+    let product = await prisma.product.findUnique({
       where: { id },
       include: {
         translations: {
@@ -40,6 +41,18 @@ export async function getProductById(id: string, locale: string = 'en') {
         }
       }
     });
+
+    // 如果按 ID 没找到，尝试按 slug 查找
+    if (!product) {
+      product = await prisma.product.findUnique({
+        where: { slug: id },
+        include: {
+          translations: {
+            where: { lang: { in: [locale, 'en', 'zh'] } }
+          }
+        }
+      });
+    }
 
     if (!product) {
       return null;

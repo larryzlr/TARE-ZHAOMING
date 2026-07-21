@@ -9,7 +9,8 @@ import InquiryForm from '@/components/InquiryForm';
 import OeNumberQuery from '@/components/OeNumberQuery';
 import SectionBackground from '@/components/SectionBackground';
 
-export const dynamic = 'force-dynamic';
+// ISR：每小时重新生成（产品更新后会在 1 小时内自动反映）
+export const revalidate = 3600;
 
 export default async function HomePage({ params }: { params: { locale: string } }) {
   const t = await getTranslations('IndexPage');
@@ -62,8 +63,56 @@ export default async function HomePage({ params }: { params: { locale: string } 
 
   const hasHeroBg = heroImages.length > 0;
 
+  // JSON-LD 结构化数据：Organization + WebSite
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: siteConfig.company_name || 'RUISHA Brake',
+    url: SITE_URL,
+    logo: siteConfig.logo || `${SITE_URL}/logo.png`,
+    description: siteConfig.site_description || heroSubtitle,
+    foundingDate: '2004',
+    numberOfEmployees: { '@type': 'QuantitativeValue', value: '500+' },
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'CN',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'sales',
+      email: siteConfig.email || '',
+      availableLanguage: ['zh', 'en', 'ru', 'fr', 'es'],
+    },
+    sameAs: [
+      siteConfig.whatsapp || '',
+      siteConfig.telegram || '',
+    ].filter(Boolean),
+  };
+
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: siteConfig.company_name || 'RUISHA Brake',
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE_URL}/${locale}/products?search={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      {/* JSON-LD 结构化数据 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <Header
         companyName={siteConfig.company_name || 'ZHAOMING'}
         logo={siteConfig.logo}
@@ -168,7 +217,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
                   <div className="bg-primary-100 w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                     {parent.icon ? (
                       parent.icon.startsWith('/') || parent.icon.startsWith('http') ? (
-                        <img src={parent.icon} alt={parent.name} className="w-9 h-9 md:w-10 md:h-10 object-cover" />
+                        <img src={parent.icon} alt={`${parent.name} - Brake Pad Categories | RUISHA`} className="w-9 h-9 md:w-10 md:h-10 object-cover" />
                       ) : (
                         <svg className="w-5 h-5 md:w-5 md:h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d={parent.icon} />
@@ -180,7 +229,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
                   </div>
                   <h3 className="text-sm md:text-base font-bold text-gray-800">{parent.name}</h3>
                 </div>
-                {/* 二级分类卡片 */}
+                {/* 二级分类卡片 - 图片完整显示不裁剪 */}
                 {parent.children && parent.children.length > 0 ? (
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-4 p-4">
                     {parent.children.map((child) => (
@@ -192,7 +241,11 @@ export default async function HomePage({ params }: { params: { locale: string } 
                         <div className="bg-primary-50 w-32 h-32 md:w-40 md:h-40 rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-100 transition-colors overflow-hidden">
                           {child.icon ? (
                             child.icon.startsWith('/') || child.icon.startsWith('http') ? (
-                              <img src={child.icon} alt={child.name} className="w-32 h-32 md:w-40 md:h-40 object-cover" />
+                              <img
+                                src={child.icon}
+                                alt={`${child.name} - ${parent.name} | OEM Brake Pads | RUISHA`}
+                                className="w-full h-full object-contain p-2"
+                              />
                             ) : (
                               <svg className="w-16 h-16 md:w-20 md:h-20 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d={child.icon} />

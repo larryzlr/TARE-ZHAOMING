@@ -7,13 +7,19 @@ import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import ProductDetailImages from '@/components/ProductDetailImages';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { routing } from '@/lib/i18n/routing';
 
-export const dynamic = 'force-dynamic';
+// ISR：每 60 分钟重新生成一次
+export const revalidate = 3600;
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
 
 export async function generateMetadata({ params }: { params: { locale: string; id: string } }) {
   const { locale, id } = params;
   let title = 'Product - RUISHA Brake';
+  let description = 'Professional brake pad manufacturer providing high-quality OEM brake pads with E-Mark certification.';
 
   try {
     const product = await getProductById(id, locale);
@@ -24,13 +30,38 @@ export async function generateMetadata({ params }: { params: { locale: string; i
 
     const companyName = config.company_name || 'RUISHA Brake';
     if (product?.title) {
-      title = `${product.title} - ${companyName}`;
+      title = `${product.title} - ${companyName} | Brake Pad Manufacturer`;
+      description = product.description || `${product.title} - OEM brake pads with E-Mark certification from RUISHA Brake, professional brake pad manufacturer.`;
     } else {
       title = companyName;
     }
+
+    // 产品页 hreflang
+    const languages: Record<string, string> = {};
+    routing.locales.forEach((loc) => {
+      languages[loc] = `${SITE_URL}/${loc}/products/${id}`;
+    });
+    languages['x-default'] = `${SITE_URL}/en/products/${id}`;
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `${SITE_URL}/${locale}/products/${id}`,
+        languages,
+      },
+      openGraph: {
+        title,
+        description,
+        type: 'article',
+        url: `${SITE_URL}/${locale}/products/${id}`,
+        siteName: 'RUISHA Brake',
+        images: product?.images?.length ? product.images.slice(0, 3).map((url: string) => ({ url, width: 800, height: 800, alt: `${product.title} - Brake Pads` })) : [],
+      },
+    };
   } catch (e) {}
 
-  return { title };
+  return { title, description };
 }
 
 export default async function ProductDetailPage({ params }: { params: { locale: string; id: string } }) {
@@ -63,8 +94,62 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
     notFound();
   }
 
+  // JSON-LD 结构化数据：Product + BreadcrumbList
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description || `${product.title} - OEM Brake Pads`,
+    image: product.images || [],
+    brand: {
+      '@type': 'Brand',
+      name: siteConfig.company_name || 'RUISHA Brake',
+    },
+    manufacturer: {
+      '@type': 'Organization',
+      name: siteConfig.company_name || 'RUISHA Brake',
+    },
+    category: product.category || 'Brake Pads',
+    sku: product.slug || product.id,
+    url: `${SITE_URL}/${locale}/products/${id}`,
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: ct('home'),
+        item: `${SITE_URL}/${locale}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: t('allProducts'),
+        item: `${SITE_URL}/${locale}/products`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: product.title,
+        item: `${SITE_URL}/${locale}/products/${id}`,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      {/* JSON-LD 结构化数据 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header
         companyName={siteConfig.company_name || 'ZHAOMING'}
         logo={siteConfig.logo}
@@ -88,12 +173,15 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
       <div className="container mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
-            <div className="w-full aspect-square bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100">
+            <div className="w-full aspect-square bg-gray-50 rounded-2xl flex items-center justify-center overflow-hidden border border-gray-100 relative">
               {product.images && product.images.length > 0 ? (
-                <img
+                <Image
                   src={product.images[0]}
-                  alt={product.title}
-                  className="w-full h-full object-contain p-4"
+                  alt={`${product.title} - OEM Brake Pads | E-Mark Certified | RUISHA`}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-contain p-4"
                 />
               ) : (
                 <div className="flex flex-col items-center text-gray-300">
@@ -107,9 +195,15 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
                 {product.images.map((img: string, idx: number) => (
                   <div
                     key={idx}
-                    className="shrink-0 w-20 h-20 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:border-primary-400 transition-colors"
+                    className="shrink-0 w-20 h-20 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:border-primary-400 transition-colors relative"
                   >
-                    <img src={img} alt={`${product.title} ${idx + 1}`} className="w-full h-full object-contain p-1" />
+                    <Image
+                      src={img}
+                      alt={`${product.title} - Brake Pad Image ${idx + 1} - RUISHA`}
+                      fill
+                      sizes="80px"
+                      className="object-contain p-1"
+                    />
                   </div>
                 ))}
               </div>

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -24,15 +25,20 @@ export default function ProductCard({ product, locale }: ProductCardProps) {
     ? product.images[0]
     : null;
 
+  // 关键词丰富的 alt 文本：产品名 + 类目 + 关键词
+  const altText = `${product.title} - ${product.category || 'Brake Pads'} | RUISHA Brake Pad Manufacturer`;
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group">
       <Link href={`/${locale}/products/${product.id}`} className="block">
-        <div className="w-full h-56 bg-gray-50 flex items-center justify-center overflow-hidden">
+        <div className="w-full h-56 bg-gray-50 flex items-center justify-center overflow-hidden relative">
           {firstImage ? (
-            <img
+            <Image
               src={firstImage}
-              alt={product.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              alt={altText}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
             <div className="flex flex-col items-center text-gray-300">

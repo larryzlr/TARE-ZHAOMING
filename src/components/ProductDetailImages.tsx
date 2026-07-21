@@ -50,7 +50,7 @@ export default function ProductDetailImages({ images, title }: ProductDetailImag
           >
             <img
               src={img}
-              alt={`${title || '产品详情'} - 图片 ${i + 1}`}
+              alt={`${title || 'Brake Pads'} - Product Detail Image ${i + 1} - RUISHA Brake Pad Manufacturer`}
               className="w-full h-auto object-contain rounded-lg border border-gray-100 bg-white transition group-hover:border-primary-300 group-hover:shadow-md"
             />
             <span className="absolute top-3 right-3 px-2.5 py-1 bg-black/60 text-white text-xs rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
@@ -93,7 +93,7 @@ export default function ProductDetailImages({ images, title }: ProductDetailImag
           {/* 图片 */}
           <img
             src={images[activeIndex]}
-            alt={`${title || '产品详情'} - 原图 ${activeIndex + 1}`}
+            alt={`${title || 'Brake Pads'} - Full View ${activeIndex + 1} - RUISHA`}
             onClick={(e) => e.stopPropagation()}
             className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg"
           />

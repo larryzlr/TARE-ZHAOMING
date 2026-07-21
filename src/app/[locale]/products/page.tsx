@@ -5,20 +5,33 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
+import { routing } from '@/lib/i18n/routing';
 
-export const dynamic = 'force-dynamic';
+// ISR：每小时重新生成
+export const revalidate = 3600;
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yourdomain.com';
 
 const PRODUCTS_TITLE_MAP: Record<string, string> = {
-  en: 'Products - RUISHA Brake',
-  zh: '产品中心 - 瑞刹 RUISHA',
-  ru: 'Продукция - RUISHA Brake',
-  fr: 'Produits - RUISHA Brake',
-  es: 'Productos - RUISHA Brake',
+  en: 'Brake Pad Products - OEM & E-Mark Certified | RUISHA Brake',
+  zh: '刹车片产品中心 - OEM刹车片工厂 | 瑞刹 RUISHA',
+  ru: 'Тормозные колодки - OEM & E-Mark | RUISHA Brake',
+  fr: 'Produits plaquettes de frein - OEM & E-Mark | RUISHA Brake',
+  es: 'Productos pastillas de freno - OEM & E-Mark | RUISHA Brake',
+};
+
+const PRODUCTS_DESC_MAP: Record<string, string> = {
+  en: 'Browse RUISHA Brake\'s full range of OEM brake pads: disc, drum, ceramic brake pads with E-Mark certification. 20+ years manufacturer exporting to 50+ countries.',
+  zh: '浏览瑞刹刹车片全系列产品：OEM盘式、鼓式、陶瓷刹车片，E-Mark认证，20+年制造经验，出口50+国家。',
+  ru: 'Просмотрите полный ассортимент тормозных колодок RUISHA: дисковые, барабанные, керамические с сертификатом E-Mark.',
+  fr: 'Parcourez la gamme complète de plaquettes de frein RUISHA : disque, tambour, céramique avec certification E-Mark.',
+  es: 'Explore la gama completa de pastillas de freno RUISHA: disco, tambor, cerámicas con certificación E-Mark.',
 };
 
 export async function generateMetadata({ params }: { params: { locale: string } }) {
   const { locale } = params;
   let title = PRODUCTS_TITLE_MAP[locale] || PRODUCTS_TITLE_MAP['en'];
+  let description = PRODUCTS_DESC_MAP[locale] || PRODUCTS_DESC_MAP['en'];
 
   try {
     const config = await getSiteConfig(locale);
@@ -35,7 +48,27 @@ export async function generateMetadata({ params }: { params: { locale: string } 
     }
   } catch (e) {}
 
-  return { title };
+  const languages: Record<string, string> = {};
+  routing.locales.forEach((loc) => {
+    languages[loc] = `${SITE_URL}/${loc}/products`;
+  });
+  languages['x-default'] = `${SITE_URL}/en/products`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/${locale}/products`,
+      languages,
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: `${SITE_URL}/${locale}/products`,
+      siteName: 'RUISHA Brake',
+    },
+  };
 }
 
 export default async function ProductsPage({

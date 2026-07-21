@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
@@ -59,7 +60,13 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
           <Link href={`/${currentLocale}`} className="flex items-center space-x-2 shrink-0">
             {logo ? (
               <>
-                <img src={logo} alt={companyName} className="h-9 w-auto max-w-[120px] object-contain" />
+                <Image
+                  src={logo}
+                  alt={`${companyName} - Brake Pad Manufacturer Logo`}
+                  width={120}
+                  height={36}
+                  className="h-9 w-auto max-w-[120px] object-contain"
+                />
                 {companyName && <span className="text-lg font-bold text-gray-800 hidden sm:inline">{companyName}</span>}
               </>
             ) : (

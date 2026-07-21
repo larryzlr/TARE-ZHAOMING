@@ -1,11 +1,15 @@
 import { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
+import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { routing } from '@/lib/i18n/routing';
 import { getSiteConfig } from '@/lib/product-service';
 import { Inter } from 'next/font/google';
 import '@/app/globals.css';
+
+// Google Ads 转化追踪代码 ID
+const GA_AD_ID = 'AW-18337651107';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,6 +89,21 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale}>
+      <head>
+        {/* Google Ads gtag.js - 紧跟 head 之后加载 */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_AD_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_AD_ID}');
+          `}
+        </Script>
+      </head>
       <body className={inter.className}>
         <NextIntlClientProvider messages={messages}>
           {children}

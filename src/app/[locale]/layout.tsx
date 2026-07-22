@@ -4,6 +4,7 @@ import Script from 'next/script';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { routing } from '@/lib/i18n/routing';
+import { getLocalizedUrl } from '@/lib/i18n/path';
 import { getSiteConfig } from '@/lib/product-service';
 import { getSiteUrl } from '@/lib/site-url';
 import { Inter } from 'next/font/google';
@@ -89,10 +90,10 @@ export async function generateMetadata({ params }: Props) {
   // 构建 hreflang 多语言 alternate 链接
   const languages: Record<string, string> = {};
   routing.locales.forEach((loc) => {
-    languages[loc] = `${siteUrl}/${loc}`;
+    languages[loc] = getLocalizedUrl(siteUrl, loc, '/');
   });
   // 添加 x-default 指向英文版本
-  languages['x-default'] = `${siteUrl}/en`;
+  languages['x-default'] = getLocalizedUrl(siteUrl, routing.defaultLocale, '/');
 
   return {
     title,
@@ -100,14 +101,14 @@ export async function generateMetadata({ params }: Props) {
     keywords,
     metadataBase: new URL(siteUrl),
     alternates: {
-      canonical: `${siteUrl}/${locale}`,
+      canonical: getLocalizedUrl(siteUrl, locale, '/'),
       languages,
     },
     openGraph: {
       title,
       description,
       locale: OG_LOCALE_MAP[locale] || 'en_US',
-      url: `${siteUrl}/${locale}`,
+      url: getLocalizedUrl(siteUrl, locale, '/'),
       siteName: 'Z-MING Brake',
       type: 'website',
     },

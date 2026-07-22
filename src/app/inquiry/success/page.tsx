@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getLocalizedPath } from '@/lib/i18n/path';
 
 // 多语言文案
 const MESSAGES: Record<string, {
@@ -129,13 +130,13 @@ export default function InquirySuccessPage() {
           {/* 操作按钮 */}
           <div className="space-y-3">
             <Link
-              href={`/${locale}`}
+              href={getLocalizedPath(locale, '/')}
               className="block w-full px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors"
             >
               {t.backToHome}
             </Link>
             <Link
-              href={`/${locale}/products`}
+              href={getLocalizedPath(locale, '/products')}
               className="block w-full px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
               {t.viewProducts}

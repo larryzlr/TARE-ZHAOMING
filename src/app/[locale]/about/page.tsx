@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { getSiteConfig } from '@/lib/product-service';
 import { getSiteUrl } from '@/lib/site-url';
 import { routing } from '@/lib/i18n/routing';
+import { getLocalizedUrl, getLocalizedPath } from '@/lib/i18n/path';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
@@ -42,7 +43,7 @@ const DEFAULT_ABOUT: Record<string, { title: string; content: string; subtitle: 
   ru: {
     subtitle: 'Надёжный производитель тормозных колодок с 2004 года',
     title: 'О компании Z-MING',
-    content: 'Z-MING Brake Parts Co., Ltd. — профессиональный производитель тормозных колодок с опытом более 20 лет. Завод в Китае площадью 50 000+ м², сертифицирован IATF 16949, годовая мощность — 5 млн комплектов.\n\nМы специализируемся на OEM/ODM производстве: полуметаллические, керамические, низкометаллические составы. Вся продукция имеет сертификаты E-Mark, AMECA, EAC, CCC.\n\nКоманда R&D из 30+ инженеров и строгий контроль качества. Экспорт в 50+ стран Европы, России, Юго-Восточной Азии, Ближнего Востока и Южной Америки.',
+    content: 'Z-MING Brake Parts Co., Ltd. — профессиональный производитель тормозных колодок с опытом более 20 лет. Завод в Китае площадью 50 000+ м², сертифицирован IATF 16949, годовая мощность — 5 млн комплектов.\n\nМы специализируемся на OEM/ODM производстве: полуметаллические, керамические, низкометаллические составы. Вся продукция имеет сертификаты E-Mark (ECE R90), AMECA, EAC, CCC.\n\nКоманда R&D из 30+ инженеров и строгий контроль качества. Экспорт в 50+ стран Европы, России, Юго-Восточной Азии, Ближнего Востока и Южной Америки.',
   },
   fr: {
     subtitle: "Fabricant de confiance depuis 2004",
@@ -64,22 +65,22 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 
   const languages: Record<string, string> = {};
   routing.locales.forEach((loc) => {
-    languages[loc] = `${SITE_URL}/${loc}/about`;
+    languages[loc] = getLocalizedUrl(SITE_URL, loc, '/about');
   });
-  languages['x-default'] = `${SITE_URL}/en/about`;
+  languages['x-default'] = getLocalizedUrl(SITE_URL, routing.defaultLocale, '/about');
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${SITE_URL}/${locale}/about`,
+      canonical: getLocalizedUrl(SITE_URL, locale, '/about'),
       languages,
     },
     openGraph: {
       title,
       description,
       type: 'article',
-      url: `${SITE_URL}/${locale}/about`,
+      url: getLocalizedUrl(SITE_URL, locale, '/about'),
       siteName: 'Z-MING Brake',
     },
   };
@@ -123,8 +124,8 @@ export default async function AboutPage({ params }: { params: { locale: string }
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: t('home'), item: `${SITE_URL}/${locale}` },
-      { '@type': 'ListItem', position: 2, name: title, item: `${SITE_URL}/${locale}/about` },
+      { '@type': 'ListItem', position: 1, name: t('home'), item: getLocalizedUrl(SITE_URL, locale, '/') },
+      { '@type': 'ListItem', position: 2, name: title, item: getLocalizedUrl(SITE_URL, locale, '/about') },
     ],
   };
 
@@ -145,7 +146,7 @@ export default async function AboutPage({ params }: { params: { locale: string }
       <main className="container mx-auto px-4 py-12 max-w-5xl">
         {/* 面包屑 */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link href={`/${locale}`} className="hover:text-primary-600">{t('home')}</Link>
+          <Link href={getLocalizedPath(locale, '/')} className="hover:text-primary-600">{t('home')}</Link>
           <span className="mx-2">/</span>
           <span className="text-gray-700">{title}</span>
         </nav>
@@ -205,13 +206,13 @@ export default async function AboutPage({ params }: { params: { locale: string }
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
-              href={`/${locale}/products`}
+              href={getLocalizedPath(locale, '/products')}
               className="inline-flex items-center px-6 py-3 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
             >
               {locale === 'zh' ? '查看产品' : 'View Products'} →
             </Link>
             <Link
-              href={`/${locale}#inquiry`}
+              href={`${getLocalizedPath(locale, '/')}#inquiry`}
               className="inline-flex items-center px-6 py-3 border border-primary-500 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition-colors"
             >
               {locale === 'zh' ? '获取报价' : 'Get a Quote'}

@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { getSiteConfig } from '@/lib/product-service';
 import { getSiteUrl } from '@/lib/site-url';
 import { routing } from '@/lib/i18n/routing';
+import { getLocalizedUrl, getLocalizedPath } from '@/lib/i18n/path';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
@@ -81,22 +82,22 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 
   const languages: Record<string, string> = {};
   routing.locales.forEach((loc) => {
-    languages[loc] = `${SITE_URL}/${loc}/faq`;
+    languages[loc] = getLocalizedUrl(SITE_URL, loc, '/faq');
   });
-  languages['x-default'] = `${SITE_URL}/en/faq`;
+  languages['x-default'] = getLocalizedUrl(SITE_URL, routing.defaultLocale, '/faq');
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${SITE_URL}/${locale}/faq`,
+      canonical: getLocalizedUrl(SITE_URL, locale, '/faq'),
       languages,
     },
     openGraph: {
       title,
       description,
       type: 'article',
-      url: `${SITE_URL}/${locale}/faq`,
+      url: getLocalizedUrl(SITE_URL, locale, '/faq'),
       siteName: 'Z-MING Brake',
     },
   };
@@ -145,8 +146,8 @@ export default async function FaqPage({ params }: { params: { locale: string } }
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: t('home'), item: `${SITE_URL}/${locale}` },
-      { '@type': 'ListItem', position: 2, name: pageTitle, item: `${SITE_URL}/${locale}/faq` },
+      { '@type': 'ListItem', position: 1, name: t('home'), item: getLocalizedUrl(SITE_URL, locale, '/') },
+      { '@type': 'ListItem', position: 2, name: pageTitle, item: getLocalizedUrl(SITE_URL, locale, '/faq') },
     ],
   };
 
@@ -164,7 +165,7 @@ export default async function FaqPage({ params }: { params: { locale: string } }
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         {/* 面包屑 */}
         <nav className="text-sm text-gray-500 mb-6">
-          <Link href={`/${locale}`} className="hover:text-primary-600">{t('home')}</Link>
+          <Link href={getLocalizedPath(locale, '/')} className="hover:text-primary-600">{t('home')}</Link>
           <span className="mx-2">/</span>
           <span className="text-gray-700">{pageTitle}</span>
         </nav>
@@ -207,7 +208,7 @@ export default async function FaqPage({ params }: { params: { locale: string } }
             {locale === 'zh' ? '我们的销售团队随时为您解答' : 'Our sales team is ready to help you'}
           </p>
           <Link
-            href={`/${locale}#inquiry`}
+            href={`${getLocalizedPath(locale, '/')}#inquiry`}
             className="inline-flex items-center px-6 py-3 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
           >
             {locale === 'zh' ? '联系我们' : 'Contact Us'} →

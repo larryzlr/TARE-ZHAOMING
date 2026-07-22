@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
+import { getLocalizedUrl, getLocalizedPath } from '@/lib/i18n/path';
 import { getSiteUrl } from '@/lib/site-url';
 
 // ISR：每 60 分钟重新生成一次
@@ -39,22 +40,22 @@ export async function generateMetadata({ params }: { params: { locale: string; i
     // 产品页 hreflang
     const languages: Record<string, string> = {};
     routing.locales.forEach((loc) => {
-      languages[loc] = `${SITE_URL}/${loc}/products/${id}`;
+      languages[loc] = getLocalizedUrl(SITE_URL, loc, `/products/${id}`);
     });
-    languages['x-default'] = `${SITE_URL}/en/products/${id}`;
+    languages['x-default'] = getLocalizedUrl(SITE_URL, routing.defaultLocale, `/products/${id}`);
 
     return {
       title,
       description,
       alternates: {
-        canonical: `${SITE_URL}/${locale}/products/${id}`,
+        canonical: getLocalizedUrl(SITE_URL, locale, `/products/${id}`),
         languages,
       },
       openGraph: {
         title,
         description,
         type: 'article',
-        url: `${SITE_URL}/${locale}/products/${id}`,
+        url: getLocalizedUrl(SITE_URL, locale, `/products/${id}`),
         siteName: 'RUISHA Brake',
         images: product?.images?.length ? product.images.slice(0, 3).map((url: string) => ({ url, width: 800, height: 800, alt: `${product.title} - Brake Pads` })) : [],
       },
@@ -112,7 +113,7 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
     },
     category: product.category || 'Brake Pads',
     sku: product.slug || product.id,
-    url: `${SITE_URL}/${locale}/products/${id}`,
+    url: getLocalizedUrl(SITE_URL, locale, `/products/${id}`),
   };
 
   const breadcrumbJsonLd = {
@@ -123,19 +124,19 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
         '@type': 'ListItem',
         position: 1,
         name: ct('home'),
-        item: `${SITE_URL}/${locale}`,
+        item: getLocalizedUrl(SITE_URL, locale, '/'),
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: t('allProducts'),
-        item: `${SITE_URL}/${locale}/products`,
+        item: getLocalizedUrl(SITE_URL, locale, '/products'),
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: product.title,
-        item: `${SITE_URL}/${locale}/products/${id}`,
+        item: getLocalizedUrl(SITE_URL, locale, `/products/${id}`),
       },
     ],
   };
@@ -162,9 +163,9 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-4">
           <nav className="flex items-center space-x-2 py-3 text-sm text-gray-500">
-            <a href={`/${locale}`} className="hover:text-primary-600 transition-colors">{ct('home')}</a>
+            <a href={getLocalizedPath(locale, '/')} className="hover:text-primary-600 transition-colors">{ct('home')}</a>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            <a href={`/${locale}/products`} className="hover:text-primary-600 transition-colors">{t('allProducts')}</a>
+            <a href={getLocalizedPath(locale, '/products')} className="hover:text-primary-600 transition-colors">{t('allProducts')}</a>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             <span className="text-gray-800 font-medium line-clamp-1">{product.title}</span>
           </nav>
@@ -250,7 +251,7 @@ export default async function ProductDetailPage({ params }: { params: { locale: 
                 </a>
               )}
               <a
-                href={`/${locale}#contact`}
+                href={`${getLocalizedPath(locale, '/')}#contact`}
                 className="flex-1 px-8 py-3.5 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors text-center"
               >
                 {t('getQuote')}

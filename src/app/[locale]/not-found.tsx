@@ -4,6 +4,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { getLocalizedPath } from '@/lib/i18n/path';
 
 export default function NotFoundPage() {
   const params = useParams();
@@ -24,7 +25,7 @@ export default function NotFoundPage() {
       <h2 className="text-2xl font-bold text-gray-800 mb-4">{t.title}</h2>
       <p className="text-gray-600 mb-8">{t.desc}</p>
       <a
-        href={`/${locale}`}
+        href={getLocalizedPath(locale, '/')}
         className="px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition duration-300"
       >
         {t.btn}

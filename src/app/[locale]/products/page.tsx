@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import ContactFloatingButtons from '@/components/ContactFloatingButtons';
 import { routing } from '@/lib/i18n/routing';
+import { getLocalizedUrl, getLocalizedPath } from '@/lib/i18n/path';
 import { getSiteUrl } from '@/lib/site-url';
 
 // ISR：每小时重新生成
@@ -50,22 +51,22 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 
   const languages: Record<string, string> = {};
   routing.locales.forEach((loc) => {
-    languages[loc] = `${SITE_URL}/${loc}/products`;
+    languages[loc] = getLocalizedUrl(SITE_URL, loc, '/products');
   });
-  languages['x-default'] = `${SITE_URL}/en/products`;
+  languages['x-default'] = getLocalizedUrl(SITE_URL, routing.defaultLocale, '/products');
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${SITE_URL}/${locale}/products`,
+      canonical: getLocalizedUrl(SITE_URL, locale, '/products'),
       languages,
     },
     openGraph: {
       title,
       description,
       type: 'website',
-      url: `${SITE_URL}/${locale}/products`,
+      url: getLocalizedUrl(SITE_URL, locale, '/products'),
       siteName: 'RUISHA Brake',
     },
   };
@@ -114,7 +115,7 @@ export default async function ProductsPage({
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-4">
           <nav className="flex items-center space-x-2 py-3 text-sm text-gray-500">
-            <a href={`/${locale}`} className="hover:text-primary-600 transition-colors">{ct('home')}</a>
+            <a href={getLocalizedPath(locale, '/')} className="hover:text-primary-600 transition-colors">{ct('home')}</a>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             <span className="text-gray-800 font-medium">{t('allProducts')}</span>
           </nav>
@@ -125,7 +126,7 @@ export default async function ProductsPage({
         <div className="container mx-auto px-4">
           <div className="flex items-center space-x-1 overflow-x-auto py-3 scrollbar-hide">
             <a
-              href={`/${locale}/products`}
+              href={getLocalizedPath(locale, '/products')}
               className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 !selectedCategory
                   ? 'bg-primary-500 text-white'
@@ -137,7 +138,7 @@ export default async function ProductsPage({
             {categories.map(cat => (
               <a
                 key={cat.slug}
-                href={`/${locale}/products?category=${cat.slug}`}
+                href={`${getLocalizedPath(locale, '/products')}?category=${cat.slug}`}
                 className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === cat.slug
                     ? 'bg-primary-500 text-white'

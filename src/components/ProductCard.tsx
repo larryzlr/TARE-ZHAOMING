@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getLocalizedPath } from '@/lib/i18n/path';
 
 interface Product {
   id: string;
@@ -28,9 +29,12 @@ export default function ProductCard({ product, locale }: ProductCardProps) {
   // 关键词丰富的 alt 文本：产品名 + 类目 + 关键词
   const altText = `${product.title} - ${product.category || 'Brake Pads'} | RUISHA Brake Pad Manufacturer`;
 
+  const productPath = getLocalizedPath(locale, `/products/${product.slug}`);
+  const productInquiryPath = `${productPath}#inquiry`;
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group">
-      <Link href={`/${locale}/products/${product.slug}`} className="block">
+      <Link href={productPath} className="block">
         <div className="w-full h-56 bg-gray-50 flex items-center justify-center overflow-hidden relative">
           {firstImage ? (
             <Image
@@ -49,7 +53,7 @@ export default function ProductCard({ product, locale }: ProductCardProps) {
         </div>
       </Link>
       <div className="p-5">
-        <Link href={`/${locale}/products/${product.slug}`}>
+        <Link href={productPath}>
           <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-primary-600 transition-colors line-clamp-1">
             {product.title}
           </h3>
@@ -57,13 +61,13 @@ export default function ProductCard({ product, locale }: ProductCardProps) {
         <p className="text-gray-500 text-sm line-clamp-2 mb-4">{product.description}</p>
         <div className="flex items-center justify-between">
           <Link
-            href={`/${locale}/products/${product.slug}`}
+            href={productPath}
             className="text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
           >
             {t('viewDetail')} →
           </Link>
           <Link
-            href={`/${locale}/products/${product.slug}#inquiry`}
+            href={productInquiryPath}
             className="text-xs bg-primary-50 text-primary-600 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors font-medium"
           >
             {t('inquiryNow')}

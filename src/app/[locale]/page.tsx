@@ -9,6 +9,7 @@ import InquiryForm from '@/components/InquiryForm';
 import OeNumberQuery from '@/components/OeNumberQuery';
 import SectionBackground from '@/components/SectionBackground';
 import { getSiteUrl } from '@/lib/site-url';
+import { getLocalizedUrl, getLocalizedPath } from '@/lib/i18n/path';
 
 // ISR：每小时重新生成（产品更新后会在 1 小时内自动反映）
 export const revalidate = 3600;
@@ -37,7 +38,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
   const heroTitle = siteConfig.hero_title || t('title');
   const heroSubtitle = siteConfig.hero_subtitle || t('subtitle');
   const heroBtn1Text = siteConfig.hero_btn1_text || t('viewProducts');
-  const heroBtn1Link = siteConfig.hero_btn1_link || `/${locale}/products`;
+  const heroBtn1Link = siteConfig.hero_btn1_link || getLocalizedPath(locale, '/products');
   const heroBtn2Text = siteConfig.hero_btn2_text || t('getQuote');
   const heroBtn2Link = siteConfig.hero_btn2_link || '#contact';
 
@@ -98,7 +99,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
     url: SITE_URL,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${SITE_URL}/${locale}/products?search={search_term_string}`,
+      target: `${getLocalizedUrl(SITE_URL, locale, '/products')}?search={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   };
@@ -236,7 +237,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
                     {parent.children.map((child) => (
                       <a
                         key={child.id}
-                        href={`/${locale}/products?category=${child.slug}`}
+                        href={`${getLocalizedPath(locale, '/products')}?category=${child.slug}`}
                         className="flex flex-col items-center text-center p-3 rounded-lg hover:bg-primary-50 transition-all border border-transparent hover:border-primary-200 group"
                       >
                         <div className="bg-primary-50 w-32 h-32 md:w-40 md:h-40 rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary-100 transition-colors overflow-hidden">
@@ -265,7 +266,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
                 ) : (
                   <div className="px-4 py-2">
                     <a
-                      href={`/${locale}/products?category=${parent.slug}`}
+                      href={`${getLocalizedPath(locale, '/products')}?category=${parent.slug}`}
                       className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700 text-sm"
                     >
                       查看该分类下的产品 →
@@ -287,7 +288,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
               <div className="w-20 h-1 bg-primary-500 rounded-full"></div>
             </div>
             <a
-              href={`/${locale}/products`}
+              href={getLocalizedPath(locale, '/products')}
               className="hidden sm:inline-flex items-center text-primary-600 font-medium hover:text-primary-700 transition-colors"
             >
               {t('viewAll')}
@@ -309,7 +310,7 @@ export default async function HomePage({ params }: { params: { locale: string } 
           )}
 
           <div className="text-center mt-10 sm:hidden">
-            <a href={`/${locale}/products`} className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700">
+            <a href={getLocalizedPath(locale, '/products')} className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700">
               {t('viewAll')} →
             </a>
           </div>

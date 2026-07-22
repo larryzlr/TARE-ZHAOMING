@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
+import { getLocalizedPath } from '@/lib/i18n/path';
 
 type HeaderProps = {
   companyName?: string;
@@ -57,7 +58,7 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
     <header className={`sticky top-0 z-40 bg-white transition-shadow ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link href={`/${currentLocale}`} className="flex items-center space-x-2 shrink-0">
+          <Link href={getLocalizedPath(currentLocale, '/')} className="flex items-center space-x-2 shrink-0">
             {logo ? (
               <>
                 <Image
@@ -82,7 +83,7 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
           </Link>
 
           <nav className="hidden lg:flex items-center space-x-6">
-            {navLink(`/${currentLocale}`, t('home'))}
+            {navLink(getLocalizedPath(currentLocale, '/'), t('home'))}
 
             <div
               className="relative"
@@ -90,7 +91,7 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
               onMouseLeave={() => setProductsOpen(false)}
             >
               <Link
-                href={`/${currentLocale}/products`}
+                href={getLocalizedPath(currentLocale, '/products')}
                 className="flex items-center space-x-1 text-gray-700 hover:text-primary-600 transition-colors text-sm font-medium"
               >
                 <span>{t('products')}</span>
@@ -99,7 +100,7 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
               {productsOpen && (
                 <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-2">
                   <Link
-                    href={`/${currentLocale}/products`}
+                    href={getLocalizedPath(currentLocale, '/products')}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600"
                   >
                     {pt('allProducts')}
@@ -108,7 +109,7 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
                   {categories.map(cat => (
                     <Link
                       key={cat.slug}
-                      href={`/${currentLocale}/products?category=${cat.slug}`}
+                      href={`${getLocalizedPath(currentLocale, '/products')}?category=${cat.slug}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600"
                     >
                       {cat.name}
@@ -118,8 +119,8 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
               )}
             </div>
 
-            {navLink(`/${currentLocale}#about`, t('about'))}
-            {navLink(`/${currentLocale}#contact`, t('contact'))}
+            {navLink(`${getLocalizedPath(currentLocale, '/')}#about`, t('about'))}
+            {navLink(`${getLocalizedPath(currentLocale, '/')}#contact`, t('contact'))}
           </nav>
 
           <div className="flex items-center space-x-2">
@@ -160,19 +161,19 @@ export default function Header({ companyName = 'ZHAOMING', logo, whatsapp, teleg
       {mobileOpen && (
         <div className="border-t border-gray-100 bg-white">
           <div className="container mx-auto px-4 py-4 space-y-3">
-            <Link href={`/${currentLocale}`} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('home')}</Link>
-            <Link href={`/${currentLocale}/products`} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('products')}</Link>
+            <Link href={getLocalizedPath(currentLocale, '/')} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('home')}</Link>
+            <Link href={getLocalizedPath(currentLocale, '/products')} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('products')}</Link>
             {categories.map(cat => (
               <Link
                 key={cat.slug}
-                href={`/${currentLocale}/products?category=${cat.slug}`}
+                href={`${getLocalizedPath(currentLocale, '/products')}?category=${cat.slug}`}
                 className="block py-1 pl-4 text-sm text-gray-500 hover:text-primary-600"
               >
                 {cat.name}
               </Link>
             ))}
-            <Link href={`/${currentLocale}#about`} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('about')}</Link>
-            <Link href={`/${currentLocale}#contact`} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('contact')}</Link>
+            <Link href={`${getLocalizedPath(currentLocale, '/')}#about`} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('about')}</Link>
+            <Link href={`${getLocalizedPath(currentLocale, '/')}#contact`} className="block py-2 text-gray-700 hover:text-primary-600 font-medium">{t('contact')}</Link>
             <div className="border-t border-gray-200 my-2"></div>
             <Link
               href={`/${currentLocale}/admin/login`}
